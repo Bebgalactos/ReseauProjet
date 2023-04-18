@@ -25,5 +25,4 @@ STRLEN key :
 
 *Returns the length of the string value stored at key. An error is returned when key holds a non-string value
 
-La valeur de mon objet est de type Object, qui est un tableau et a donc une taille
-(on ne va calculer la taille du tableau qui est fixe, mais le nombre de byte utilisés)
+La valeur de mon objet est de type Object, on va devoir vérifier si c'est un String d'abord
