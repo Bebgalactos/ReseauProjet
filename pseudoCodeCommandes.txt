@@ -1,4 +1,21 @@
 Commandes :
-SET key value / SETNX key value
+SET key value :
 
-STRLEN key
+*Set key to hold the string value. If key already holds a value, it is overwritten, regardless of its type. Any previous time to live associated with the key is discarded on successful SET operation.
+
+J'ai besoin d'un objet java associé à une clé, qui contient une valeur associée, et un expirationTime
+-> après expiration time -> vaut defaultValue
+
+Cette objet est contenu dans un MAP<String, ServeurObject>
+
+SETNX key value :
+
+*Set key to hold string value if key does not exist. In that case, it is equal to SET. When key already holds a value, no operation is performed. SETNX is short for "SET if Not eXists".
+
+On ne va rien modifier sur la structure de donnée, mais on va simplement faire la même fonction, avec en plus une vérification de l'existant
+
+STRLEN key :
+
+La valeur de mon objet est de type byte[], qui est un tableau et a donc une taille
+(on ne va calculer la taille du tableau qui est fixe, mais le nombre de byte utilisés)
+
