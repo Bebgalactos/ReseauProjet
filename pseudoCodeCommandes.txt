@@ -1,1 +1,4 @@
+Commandes :
+SET key value / SETNX key value
 
+STRLEN key
