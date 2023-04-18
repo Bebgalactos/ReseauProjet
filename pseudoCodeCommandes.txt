@@ -16,6 +16,7 @@ On ne va rien modifier sur la structure de donnée, mais on va simplement faire 
 
 STRLEN key :
 
+*Returns the length of the string value stored at key. An error is returned when key holds a non-string value
+
 La valeur de mon objet est de type byte[], qui est un tableau et a donc une taille
 (on ne va calculer la taille du tableau qui est fixe, mais le nombre de byte utilisés)
-
