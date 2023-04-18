@@ -8,7 +8,7 @@ J'ai besoin d'un objet java associé à une clé, qui contient une valeur associ
 
 Pour supprimer du map, on va créer un Thread daemon en paralléle au serveur qui va toute les secondes vérifier pour chaque clés si l'objet à l'intérieur est expiré
 
-Cette objet est contenu dans un MAP<String, ServeurObject>
+Cette objet est contenu dans un MAP<Object, ServeurObject> (clé = String ou int
 
 ServeurObject :
 - Double expiration
