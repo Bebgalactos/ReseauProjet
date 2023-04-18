@@ -4,7 +4,7 @@ SET key value :
 *Set key to hold the string value. If key already holds a value, it is overwritten, regardless of its type. Any previous time to live associated with the key is discarded on successful SET operation.
 
 J'ai besoin d'un objet java associé à une clé, qui contient une valeur associée, et un expirationTime
--> après expiration time -> vaut defaultValue
+-> après expiration time -> pop du map
 
 Cette objet est contenu dans un MAP<String, ServeurObject>
 
