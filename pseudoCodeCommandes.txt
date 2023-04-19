@@ -26,3 +26,18 @@ STRLEN key :
 *Returns the length of the string value stored at key. An error is returned when key holds a non-string value
 
 La valeur de mon objet est de type Object, on va devoir vérifier si c'est un String d'abord
+
+get key :
+
+récupération de la valeur de la clé "key" dans l'objet java
+
+expire key timeout (option) :
+
+met un timeout sur un clé, quand le timeout est dépassé supprime la variable - timeout en seconde
+
+ - option
+0 -- Comportement normal
+1 -- Applique expire seulement si la key n'a pas encore de timeout
+2 -- Applique expire seulement si la key a un timeout et le remplace
+3 -- Applique expire seulement si le nouveau timeout est plus grand que l'ancien
+4 -- Applique expire seulement si le nouveau timeout est plus petitque l'ancien
