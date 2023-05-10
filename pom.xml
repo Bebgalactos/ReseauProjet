@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>fr.ul.miage.lutakhato</groupId>
+    <artifactId>reseau</artifactId>
+    <!-- Test driven development -->
+    <version>1.0</version>
+    <packaging>jar</packaging>
+
+    <properties>
+        <!-- Le code source en UTF8 -->
+        <project.build.sourceEncoding>UTF8</project.build.sourceEncoding>
+        <!-- 0U stocker la distribution binaire -->
+        <project.bindist.dir>${project.basedir}/bindist</project.bindist.dir>
+        <!-- Nom de la classe principale -->
+        <project.client.main.classname>${project.groupId}.${project.artifactId}.Client</project.client.main.classname>
+        <project.server.main.classname>${project.groupId}.${project.artifactId}.Server</project.server.main.classname>
+        <!-- Nom du script a éxecuter (bindist) -->
+        <project.client.bin.appname>runClient</project.client.bin.appname>
+        <project.server.bin.appname>runServer</project.server.bin.appname>
+        <!-- Propriété de création du README.txt -->
+        <commons.componentid>chain</commons.componentid>
+        <commons.release.version>1.4</commons.release.version>
+        <!-- Propriété des tests -->
+        <junit.version>5.9.2</junit.version>
+    </properties>
+
+    <dependencies>
+        <!-- Tests unitaires en Java -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>${junit.version}</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.openjfx</groupId>
+                <artifactId>javafx-maven-plugin</artifactId>
+                <version>0.0.4</version>
+                <configuration>
+                    <mainClass>${project.main.classname}</mainClass>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.10.1</version>
+                <configuration>
+                    <release>11</release>
+                </configuration>
+            </plugin>
+            <plugin>
+                <!-- create scripts for apps -->
+                <!-- mvn package | appassembler:assemble -->
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>appassembler-maven-plugin</artifactId>
+                <version>1.10</version>
+                <configuration>
+                    <assembleDirectory>${project.bindist.dir}</assembleDirectory>
+                    <programs>
+                        <program>
+                            <mainClass>${project.client.main.classname}</mainClass>
+                            <id>${project.client.bin.appname}</id>
+                        </program>
+                        <program>
+                            <mainClass>${project.server.main.classname}</mainClass>
+                            <id>${project.server.bin.appname}</id>
+                        </program>
+                    </programs>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>assemble</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>
