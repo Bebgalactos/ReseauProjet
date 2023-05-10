@@ -12,6 +12,6 @@ public class AppendCommand {
     public static Map<String, String> Append(Map<String, String> map, String key, String value) {
         String oldValue = map.getOrDefault(key, "");
         map.put(key, oldValue + value);
-        return map;
-    }
+        return map;
+    }
 }
