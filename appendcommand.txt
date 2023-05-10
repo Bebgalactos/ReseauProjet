@@ -1,0 +1,17 @@
+package Commands;
+
+import java.util.Map;
+
+public class AppendCommand {
+
+    /* Cette méthode prend en entrée une Map et deux chaînes de caractères, et modifie la valeur de la clé 
+    donnée dans la map en y ajoutant la valeur donnée en entrée. 
+    Si la clé n'existe pas dans la map, une nouvelle clé est créée avec la valeur donnée en entrée.
+    La méthode retourne la map modifiée. 
+    */
+    public static Map<String, String> Append(Map<String, String> map, String key, String value) {
+        String oldValue = map.getOrDefault(key, "");
+        map.put(key, oldValue + value);
+        return map;
+    }
+}
