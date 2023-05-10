@@ -72,7 +72,7 @@ if "%JAVACMD%"=="" set JAVACMD=java
 
 if "%REPO%"=="" set REPO=%BASEDIR%\repo
 
-set CLASSPATH="%BASEDIR%"\etc;"%REPO%"\fr\ul\miage\lutakhato\reseau\1.0\reseau-1.0.jar
+set CLASSPATH="%BASEDIR%"\etc;"%REPO%"\fr\ul\miage\lutakhato\reseau\SNAPSHOT-0.0.1\reseau-SNAPSHOT-0.0.1.jar
 
 set ENDORSED_DIR=
 if NOT "%ENDORSED_DIR%" == "" set CLASSPATH="%BASEDIR%"\%ENDORSED_DIR%\*;%CLASSPATH%
