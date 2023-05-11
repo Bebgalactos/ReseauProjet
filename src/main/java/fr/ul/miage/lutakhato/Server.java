@@ -15,6 +15,7 @@ public class Server {
     }
 
     public static String set(String key, Object value, String[] options) {
+
         String toReturn = "";
         options = purgeBlanks(options);
         int expireMillis = 0;
@@ -32,21 +33,25 @@ public class Server {
                     case "EX":
                         expireMillis = 1000 * Integer.valueOf(options[i + 1]);
                         break;
+
                     case "PX":
                         expireMillis = Integer.valueOf(options[i + 1]);
                         break;
+
                     case "NX":
                         if (database.containsKey(key)) {
                             LOG.warning("key already exists");
                             return toReturn;
                         }
                         break;
+
                     case "XX":
                         if (!database.containsKey(key)) {
                             LOG.warning("key does not already exists");
                             return toReturn;
                         }
                         break;
+
                     case "GET":
                         if (database.containsKey(key)) {
                             toReturn = String.valueOf(database.get(key).getValue());
@@ -54,7 +59,9 @@ public class Server {
                             toReturn = "nil";
                         }
                         break;
+
                     default:
+                        // do nothing
                         break;
                 }
             }
