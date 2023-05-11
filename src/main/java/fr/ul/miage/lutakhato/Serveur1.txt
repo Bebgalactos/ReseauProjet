@@ -1,0 +1,26 @@
+import java.util.HashMap;
+import java.util.Map;
+
+public class Server {
+
+    Map<String, Object> database = new HashMap<String, Object>();
+
+    public static void main(String[] args){
+        // Utilisation des fonctions Append et IncrDecr pour modifier la base de données
+        Map<String, String> map = new HashMap<String, String>();
+        map.put("key1", "value1");
+        map.put("key2", "value2");
+        System.out.println("Avant l'appel à la fonction Append : " + map);
+        map = AppendCommand.Append(map, "key1", "new value");
+        System.out.println("Après l'appel à la fonction Append : " + map);
+        map = AppendCommand.Append(map, "key3", "value3");
+        System.out.println("Après l'appel à la fonction Append avec une nouvelle clé : " + map);
+        System.out.println("Avant l'appel à la fonction IncrDecr : " + map);
+        map = IncrDecrCommand.IncrDecr(map, "key1", 5);
+        System.out.println("Après l'appel à la fonction IncrDecr avec une valeur positive : " + map);
+        map = IncrDecrCommand.IncrDecr(map, "key2", -3);
+        System.out.println("Après l'appel à la fonction IncrDecr avec une valeur négative : " + map);
+        map = IncrDecrCommand.IncrDecr(map, "key4", 10);
+        System.out.println("Après l'appel à la fonction IncrDecr avec une nouvelle clé : " + map);
+    }
+}
