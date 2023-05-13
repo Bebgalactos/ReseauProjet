@@ -93,4 +93,44 @@ public class Server {
         String[] result = nonEmptyStrings.toArray(new String[0]);
         return result;
     }
+         /* Cette méthode prends en entrée une Map et un tableau de String, et retourne un int qui est le nombre
+    de clés qu'on a supprimé
+    */
+    public static int Del(Map<String, String> map, String[] parameters) {
+        int res = 0; //res est initialisée à 0.
+
+        // on itére sur le tableau de string
+        for (String key : parameters) {
+            /*
+            Si la clé existe dans la Map,
+            elle est supprimée à l'aide de la méthode remove(),
+            et la variable res est incrémentée
+             */
+            if (map.containsKey(key)) {
+                map.remove(key);
+                res++;
+            }
+        }
+        return res; }
+    
+    /* Cette méthode prends en entrée une Map et un tableau de String, et retourne un int qui est le nombre
+    de clés existants dans la map donné en entrée
+    */
+    public static int Exist(Map<String, String> map, String[] parameters) {
+        int res = 0; //res est initialisée à 0 et c'est le résultat de la méthode
+
+        // on itére sur le tableau de string
+        for (String key : parameters) {
+             /*
+            Si la clé existe dans la Map,
+            la variable res est incrémentée
+             */
+            if (map.containsKey(key)) {
+                res++;
+            }
+        }
+        return res; }
+    
+    
+    
 }
