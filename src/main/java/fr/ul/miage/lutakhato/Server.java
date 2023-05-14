@@ -89,8 +89,9 @@ public class Server {
             return toReturn;
         }
 
-        ServerObject serverObject = new ServerObject((int) System.currentTimeMillis(), expireMillis, value);
+        ServerObject serverObject = new ServerObject((int) System.currentTimeMillis(), value);
         database.put(key, serverObject);
+        expire(key, expireMillis, new int[]{});
 
         return toReturn;
     }
@@ -210,4 +211,71 @@ public class Server {
         return length;
     }
 
+    /**
+     * Fonction permettant de récupérer une valeur dans la base de données
+     * @param key nom de la valeur à récupérer dans la base de données
+     * @return la valeur associée à la clé dans la base de données (retourne null si la valeur n'existe pas)
+     */
+    public Object get(String key){
+        Object value = null;
+        if(exists(new String[]{key}) > 0){
+            value = database.get(key).getValue();
+        }
+        return value;
+    }
+
+    /**
+     * Fonction permettant de mettre une "date limite" sur une variable de la base de données
+     * @param key nom de la valeur où il faut mettre la "date limite"
+     * @param seconds durée avant laquelle la variable sera expirée
+     * @param options option de la commande
+     *               - 0 : applique la "date limite" seulement si la variable n'en possède pas (option NX)
+     *               - 1 : applique la "date limite" uniquement si la variable en possède une (option XX)
+     *               - 2 : applique la "date limite" uniquement si la nouvelle est plus grande que celle qui existe
+     *               (option GR)
+     *               - 3 : applique la "date limite" seulement si la nouvelle est plus petite que celle qui existe
+     *               (option LT)
+     *               - si le tableau options est vide, se lance sans options
+     * @return 1 si l'ajout se passe correctement, 0 sinon
+     */
+    public static int expire(String key, int seconds, int[] options){
+        if(exists(new String[]{key}) > 0){
+            int expireMillis = seconds * 1000;
+            boolean noProblems = true;
+            for (int option : options) {
+                switch (option) {
+                    case 0:
+                        if (!(database.get(key).getExpire() == -1)) {
+                            noProblems = false;
+                        }
+                        break;
+                    case 1:
+                        if (!(database.get(key).getExpire() != -1)) {
+                            noProblems = false;
+                        }
+                        break;
+                    case 2:
+                        if (!(database.get(key).getExpire() < expireMillis)) {
+                            noProblems = false;
+                        }
+                        break;
+                    case 3:
+                        if (!(database.get(key).getExpire() > expireMillis)) {
+                            noProblems = false;
+                        }
+                        break;
+                    default:
+                        break;
+                }
+            }
+            if(!(expireMillis == -1 || expireMillis > 0)) {
+                noProblems = false;
+            }
+            if(noProblems) {
+                database.get(key).setExpire(expireMillis);
+                return 1;
+            }
+        }
+        return 0;
+    }
 }
