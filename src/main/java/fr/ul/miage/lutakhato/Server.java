@@ -118,7 +118,7 @@ public class Server {
         }
         return nbSuccess;
     }
-    
+
     /* Cette méthode prend en entrée une Map et un tableau de String, et retourne un int qui est le nombre
     de clés existantes dans la map donné en entrée
     */
