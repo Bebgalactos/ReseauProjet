@@ -15,6 +15,24 @@ public class Server {
 
     }
 
+    public static String[] purgeBlanks(String[] strings) {
+        // Créer une liste pour stocker les éléments non vides
+        List<String> nonEmptyStrings = new ArrayList<String>();
+
+        // Parcourir chaque élément du tableau
+        for (String str : strings) {
+            // Vérifier si l'élément est différent de la chaîne de caractères vide
+            if (!str.equals("")) {
+                // Ajouter l'élément non vide à la liste
+                nonEmptyStrings.add(str);
+            }
+        }
+
+        // Convertir la liste en un nouveau tableau
+        String[] result = nonEmptyStrings.toArray(new String[0]);
+        return result;
+    }
+
     public static String set(String key, Object value, String[] options) {
 
         String toReturn = null;
@@ -77,25 +95,8 @@ public class Server {
         return toReturn;
     }
 
-    public static String[] purgeBlanks(String[] strings) {
-        // Créer une liste pour stocker les éléments non vides
-        List<String> nonEmptyStrings = new ArrayList<String>();
-
-        // Parcourir chaque élément du tableau
-        for (String str : strings) {
-            // Vérifier si l'élément est différent de la chaîne de caractères vide
-            if (!str.equals("")) {
-                // Ajouter l'élément non vide à la liste
-                nonEmptyStrings.add(str);
-            }
-        }
-
-        // Convertir la liste en un nouveau tableau
-        String[] result = nonEmptyStrings.toArray(new String[0]);
-        return result;
-    }
-
-    /* Cette méthode prend en entrée une Map et un tableau de String, et retourne un int qui est le nombre
+    /*
+    Cette méthode prend en entrée une Map et un tableau de String, et retourne un int qui est le nombre
     de clés qu'on a supprimé
     */
     public static int del(String[] keys) {
@@ -133,7 +134,7 @@ public class Server {
              */
             if (exists(new String[]{key}) > 0) {
                 if(database.get(key).getExpire() != -1){
-                    if ((System.currentTimeMillis() - database.get(key).getCreationMillis()) > database.get(key).getExpire()) {
+                    if ((System.currentTimeMillis() - database.get(key).getCreationMillis()) < database.get(key).getExpire()) {
                         found = true;
                     } else {
                         database.remove(key);
