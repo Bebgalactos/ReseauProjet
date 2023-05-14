@@ -11,9 +11,102 @@ public class Server {
 
     private static final Logger LOG = Logger.getLogger(Server.class.getName());
     public static Map<String, ServerObject> database = new HashMap<String, ServerObject>();
+    public static String[] keyWords = new String[]{"APPEND", "DECR", "DEL", "EXISTS", "EXPIRE", "GET", "INCR", "SET"};
+
     public static void main(String[] args){
 
     }
+
+    public static boolean syntaxCheck(String entry) {
+        boolean result = true;
+
+        // Récupération des mots clés entrés
+        String[] parts = entry.split(" ");
+        parts = purgeBlanks(parts);
+
+        // Vérification de l'existence de la requête
+        boolean requestExists = false;
+        int i;
+        for(i = 0; i < keyWords.length; i++) {
+            if(keyWords[i].equals(parts[0])){
+                requestExists = true;
+                break;
+            }
+        }
+        if(!requestExists) {
+            result = false;
+        } else {
+
+            // Vérification des paramètres
+            List<String> exceptFirst = new ArrayList<String>();
+            for (int n = 1; n < parts.length; n++){
+                exceptFirst.add(parts[n]);
+            }
+            switch(keyWords[i]){
+                case "APPEND":
+                    result = syntaxCheckAppend(exceptFirst);
+                    break;
+                case "INCR":
+                case "DECR":
+                case "GET":
+                    result = syntaxCheckIncrDecrGet(exceptFirst);
+                    break;
+                case "DEL":
+                case "EXISTS":
+                    result = syntaxCheckDelExists(exceptFirst);
+                    result = syntaxCheckDelExists(exceptFirst);
+                    break;
+                case "SET":
+                    result = syntaxCheckSet(exceptFirst);
+                    break;
+                default:
+                    result = false;
+                    break;
+            }
+        }
+
+        return result;
+    }
+
+
+
+    private static boolean syntaxCheckIncrDecrGet(List<String> array) {
+        // Paramètres : String key
+        boolean result = false;
+        if(array.size() == 1) {
+            result = true;
+        }
+        return result;
+    }
+
+    private static boolean syntaxCheckAppend(List<String> array) {
+        // Paramètres : String key, String value
+        boolean result = false;
+        if(array.size() == 2) {
+            result = true;
+        }
+        return result;
+    }
+
+    private static boolean syntaxCheckSet(List<String> array) {
+        // Paramètres : String key, Object value, String[] options
+        boolean result = false;
+        if(array.size() > 1) {
+            result = true;
+        }
+        return result;
+    }
+
+    private static boolean syntaxCheckDelExists(List<String> array) {
+        // Paramètres : String[] keys
+        boolean result = false;
+        if(array.size() > 0) {
+            result = true;
+        }
+        return result;
+    }
+
+
 
     public static String[] purgeBlanks(String[] strings) {
         // Créer une liste pour stocker les éléments non vides
