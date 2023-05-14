@@ -2,6 +2,7 @@ package fr.ul.miage.lutakhato;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -9,16 +10,16 @@ public class Server {
 
 
     private static final Logger LOG = Logger.getLogger(Server.class.getName());
-    public static HashMap<String, ServerObject> database = new HashMap<String, ServerObject>();
+    public static Map<String, ServerObject> database = new HashMap<String, ServerObject>();
     public static void main(String[] args){
 
     }
 
     public static String set(String key, Object value, String[] options) {
 
-        String toReturn = "";
+        String toReturn = null;
         options = purgeBlanks(options);
-        int expireMillis = 0;
+        int expireMillis = -1;
 
         try {
             for (int i = 0; i < options.length; i = i + 1) {
@@ -39,24 +40,24 @@ public class Server {
                         break;
 
                     case "NX":
-                        if (database.containsKey(key)) {
+                        if (exists(new String[]{key}) > 0) {
                             LOG.warning("key already exists");
                             return toReturn;
                         }
                         break;
 
                     case "XX":
-                        if (!database.containsKey(key)) {
+                        if (!(exists(new String[]{key}) > 0)) {
                             LOG.warning("key does not already exists");
                             return toReturn;
                         }
                         break;
 
                     case "GET":
-                        if (database.containsKey(key)) {
+                        if (exists(new String[]{key}) > 0) {
                             toReturn = String.valueOf(database.get(key).getValue());
                         } else {
-                            toReturn = "nil";
+                            toReturn = null;
                         }
                         break;
 
@@ -93,44 +94,119 @@ public class Server {
         String[] result = nonEmptyStrings.toArray(new String[0]);
         return result;
     }
-         /* Cette méthode prends en entrée une Map et un tableau de String, et retourne un int qui est le nombre
+
+    /* Cette méthode prend en entrée une Map et un tableau de String, et retourne un int qui est le nombre
     de clés qu'on a supprimé
     */
-    public static int Del(Map<String, String> map, String[] parameters) {
-        int res = 0; //res est initialisée à 0.
+    public static int del(String[] keys) {
+        // nbSuccess est initialisée à 0 et c'est le résultat de la méthode
+        int nbSuccess = 0;
 
-        // on itére sur le tableau de string
-        for (String key : parameters) {
+        // on itère sur le tableau de clés
+        for (String key : keys) {
             /*
             Si la clé existe dans la Map,
             elle est supprimée à l'aide de la méthode remove(),
             et la variable res est incrémentée
              */
-            if (map.containsKey(key)) {
-                map.remove(key);
-                res++;
+            if (exists(new String[]{key}) > 0) {
+                database.remove(key);
+                nbSuccess++;
             }
         }
-        return res; }
+        return nbSuccess;
+    }
     
-    /* Cette méthode prends en entrée une Map et un tableau de String, et retourne un int qui est le nombre
-    de clés existants dans la map donné en entrée
+    /* Cette méthode prend en entrée une Map et un tableau de String, et retourne un int qui est le nombre
+    de clés existantes dans la map donné en entrée
     */
-    public static int Exist(Map<String, String> map, String[] parameters) {
-        int res = 0; //res est initialisée à 0 et c'est le résultat de la méthode
+    public static int exists(String[] keys) {
+        // nbSuccess est initialisée à 0 et c'est le résultat de la méthode
+        int nbSuccess = 0;
+        boolean found = false;
 
-        // on itére sur le tableau de string
-        for (String key : parameters) {
+        // on itère sur le tableau de clés
+        for (String key : keys) {
              /*
-            Si la clé existe dans la Map,
-            la variable res est incrémentée
+            Si la clé existe dans la Map et n'est pas expirée,
+            la variable nbSuccess est incrémentée
              */
-            if (map.containsKey(key)) {
-                res++;
+            if (exists(new String[]{key}) > 0) {
+                if(database.get(key).getExpire() != -1){
+                    if ((System.currentTimeMillis() - database.get(key).getCreationMillis()) > database.get(key).getExpire()) {
+                        found = true;
+                    } else {
+                        database.remove(key);
+                    }
+                } else {
+                    found = true;
+                }
+            }
+            if (found) {
+                nbSuccess++;
             }
         }
-        return res; }
-    
-    
-    
+        return nbSuccess;
+    }
+
+    public static int incr(String key) {
+        int newValue = 0;
+        if (exists(new String[]{key}) > 0) {
+            try {
+                int oldValue = Integer.valueOf(database.get(key).getValue().toString());
+                if(Integer.MAX_VALUE >= oldValue + 1){
+                    newValue = oldValue + 1;
+                } else {
+                    newValue = Integer.MAX_VALUE;
+                }
+                database.get(key).setValue(newValue);
+            } catch (Exception e) {
+                System.out.println("On ne peut pas incrémenter sur un String");
+            }
+        } else {
+            ServerObject serverObject = new ServerObject((int) System.currentTimeMillis(), -1, newValue);
+            database.put(key, serverObject);
+        }
+        return newValue;
+    }
+
+    public static int decr(String key) {
+        int newValue = 0;
+        if (exists(new String[]{key}) > 0) {
+            try {
+                int oldValue = Integer.valueOf(database.get(key).getValue().toString());
+                if(Integer.MIN_VALUE <= oldValue - 1){
+                    newValue = oldValue - 1;
+                } else {
+                    newValue = Integer.MIN_VALUE;
+                }
+                database.get(key).setValue(newValue);
+            } catch (Exception e) {
+                System.out.println("On ne peut pas incrementer sur une chaine de caracteres");
+            }
+        } else {
+            ServerObject serverObject = new ServerObject((int) System.currentTimeMillis(), -1, newValue);
+            database.put(key, serverObject);
+        }
+        return newValue;
+    }
+
+    public static int append(String key, String value) {
+        int length = value.length();
+        try {
+            if(exists(new String[]{key}) > 0){
+                String oldValue = String.valueOf(database.get(key).getValue());
+                String newValue = oldValue + value;
+                database.get(key).setValue(newValue);
+            } else {
+                length = 0;
+                ServerObject serverObject = new ServerObject((int) System.currentTimeMillis(), -1, "");
+                database.put(key, serverObject);
+            }
+        } catch (Exception e) {
+            System.out.println("On ne peut pas append sur un nombre entier");
+        }
+        return length;
+    }
+
 }

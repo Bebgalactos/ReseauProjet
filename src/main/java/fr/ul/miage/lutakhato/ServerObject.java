@@ -1,7 +1,8 @@
 package fr.ul.miage.lutakhato;
 
 public class ServerObject {
-    //
+
+    // Variables
     private int creationMillis = 0;
     private int expire = -1;
     private Object value = 0;
