@@ -4,7 +4,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
 public class ServerTest {
-
+    @Test
     @ParameterizedTest(name = "{0} + {1} = {2}")
     @CsvSource({
             "1, 1, 2",
@@ -12,7 +12,7 @@ public class ServerTest {
             "49, 51, 100",
             "1, 100, 101"
     })
-    public static void testAppend(int zero, int one, int two){
+    public void testAppend(int zero, int one, int two){
 
     }
 }
