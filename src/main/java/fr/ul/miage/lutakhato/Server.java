@@ -10,7 +10,7 @@ public class Server {
 
 
     private static final Logger LOG = Logger.getLogger(Server.class.getName());
-    public static Map<String, ServerObject> database = new HashMap<String, ServerObject>();
+    private static Map<String, ServerObject> database = new HashMap<String, ServerObject>();
     public static String[] keyWords = new String[]{"APPEND", "DECR", "DEL", "EXISTS", "EXPIRE", "GET", "INCR", "SET"};
 
     public static void main(String[] args){
@@ -53,7 +53,6 @@ public class Server {
                     break;
                 case "DEL":
                 case "EXISTS":
-                    result = syntaxCheckDelExists(exceptFirst);
                     result = syntaxCheckDelExists(exceptFirst);
                     break;
                 case "SET":
@@ -226,7 +225,7 @@ public class Server {
             Si la clé existe dans la Map et n'est pas expirée,
             la variable nbSuccess est incrémentée
              */
-            if (exists(new String[]{key}) > 0) {
+            if (database.containsKey(key)) {
                 if(database.get(key).getExpire() != -1){
                     if ((System.currentTimeMillis() - database.get(key).getCreationMillis()) < database.get(key).getExpire()) {
                         found = true;
@@ -371,4 +370,14 @@ public class Server {
         }
         return 0;
     }
+
+    // Getters et Setters
+    public Map<String, ServerObject> getDatabase(){
+        return database;
+    }
+
+    public void setDatabase(Map<String, ServerObject> database){
+        this.database = database;
+    }
+
 }
