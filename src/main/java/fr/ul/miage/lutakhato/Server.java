@@ -125,7 +125,7 @@ public class Server {
         return result;
     }
 
-    public static String set(String key, Object value, String[] options) {
+    public String set(String key, Object value, String[] options) {
 
         String toReturn = null;
         options = purgeBlanks(options);
@@ -330,7 +330,7 @@ public class Server {
      *               - si le tableau options est vide, se lance sans options
      * @return 1 si l'ajout se passe correctement, 0 sinon
      */
-    public static int expire(String key, int seconds, int[] options){
+    public int expire(String key, int seconds, int[] options){
         if(exists(new String[]{key}) > 0){
             int expireMillis = seconds * 1000;
             boolean noProblems = true;

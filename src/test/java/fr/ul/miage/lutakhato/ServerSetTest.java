@@ -25,7 +25,6 @@ public class ServerSetTest {
 
         //Tests
         server.set(key, value, options);
-        System.out.println(server.getDatabase().get(key).getValue());
         assertAll(
                 () -> assertTrue(server.getDatabase().containsKey(key)),
                 () -> assertEquals(server.getDatabase().get(key).getValue(), value)
