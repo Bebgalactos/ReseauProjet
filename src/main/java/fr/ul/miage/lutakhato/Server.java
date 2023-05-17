@@ -227,7 +227,7 @@ public class Server {
              */
             if (database.containsKey(key)) {
                 if(database.get(key).getExpireMillis() != -1){
-                    if ((System.currentTimeMillis() - database.get(key).getCreationMillis()) < database.get(key).getExpireMillis()) {
+                    if (database.get(key).isExpired()) {
                         found = true;
                     } else {
                         database.remove(key);

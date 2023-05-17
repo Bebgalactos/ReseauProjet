@@ -35,7 +35,6 @@ public class ServerObject {
     public Object getValue(){
         return this.value;
     }
-
     public boolean isExpired() {
         return System.currentTimeMillis() > (this.creationMillis + this.expireMillis);
     }
