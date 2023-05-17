@@ -1,10 +1,8 @@
 package fr.ul.miage.lutakhato;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.List;
+import java.util.*;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 public class Server {
 
@@ -13,66 +11,50 @@ public class Server {
     private static Map<String, ServerObject> database = new HashMap<String, ServerObject>();
     public static String[] keyWords = new String[]{"APPEND", "DECR", "DEL", "EXISTS", "EXPIRE", "GET", "INCR", "SET"};
 
-    public static void main(String[] args){
+    public static void main(String[] args) {
 
     }
 
     public static boolean syntaxCheck(String entry) {
-        boolean result = true;
-
         // Récupération des mots clés entrés
-        String[] parts = entry.split(" ");
-        parts = purgeBlanks(parts);
+        String[] entryParts = purgeBlanks(entry.split(" "));
+        if (entryParts.length == 0) {
+            return false;
+        }
 
         // Vérification de l'existence de la requête
-        boolean requestExists = false;
-        int i;
-        for(i = 0; i < keyWords.length; i++) {
-            if(keyWords[i].equals(parts[0])){
-                requestExists = true;
-                break;
-            }
-        }
-        if(!requestExists) {
-            result = false;
-        } else {
-
-            // Vérification des paramètres
-            List<String> exceptFirst = new ArrayList<String>();
-            for (int n = 1; n < parts.length; n++){
-                exceptFirst.add(parts[n]);
-            }
-            switch(keyWords[i]){
-                case "APPEND":
-                    result = syntaxCheckAppend(exceptFirst);
-                    break;
-                case "INCR":
-                case "DECR":
-                case "GET":
-                    result = syntaxCheckIncrDecrGet(exceptFirst);
-                    break;
-                case "DEL":
-                case "EXISTS":
-                    result = syntaxCheckDelExists(exceptFirst);
-                    break;
-                case "SET":
-                    result = syntaxCheckSet(exceptFirst);
-                    break;
-                default:
-                    result = false;
-                    break;
-            }
+        String firstKeyword = entryParts[0];
+        boolean requestExists = Arrays.stream(keyWords).anyMatch(keyword -> keyword.equals(firstKeyword));
+        if (!requestExists) {
+            return false;
         }
 
-        return result;
+        // Vérification des paramètres
+        List<String> exceptFirst = Arrays.stream(entryParts, 1, entryParts.length).collect(Collectors.toList());
+        switch (firstKeyword) {
+            case "APPEND":
+                return syntaxCheckAppend(exceptFirst);
+            case "INCR":
+            case "DECR":
+            case "GET":
+                return syntaxCheckIncrDecrGet(exceptFirst);
+            case "DEL":
+            case "EXISTS":
+                return syntaxCheckDelExists(exceptFirst);
+            case "EXPIRE":
+                return syntaxCheckExpire(exceptFirst);
+            case "SET":
+                return syntaxCheckSet(exceptFirst);
+            default:
+                return false;
+        }
     }
-
 
 
     private static boolean syntaxCheckIncrDecrGet(List<String> array) {
         // Paramètres : String key
         boolean result = false;
-        if(array.size() == 1) {
+        if (array.size() == 1) {
             result = true;
         }
         return result;
@@ -81,30 +63,42 @@ public class Server {
     private static boolean syntaxCheckAppend(List<String> array) {
         // Paramètres : String key, String value
         boolean result = false;
-        if(array.size() == 2) {
+        if (array.size() == 2) {
             result = true;
         }
         return result;
     }
 
     private static boolean syntaxCheckSet(List<String> array) {
-        // Paramètres : String key, Object value, String[] options
+        // Paramètres : String key, String value, String[] options
         boolean result = false;
-        if(array.size() > 1) {
+        if (array.size() > 1) {
             result = true;
         }
         return result;
+    }
+
+    private static boolean syntaxCheckExpire(List<String> array) {
+        // Paramètres : String key, int expireMillis, String[] options
+        if (array.size() > 1) {
+            try {
+                int isInt = Integer.valueOf(array.get(1));
+                return true;
+            } catch (NumberFormatException e) {
+                return false;
+            }
+        }
+        return false;
     }
 
     private static boolean syntaxCheckDelExists(List<String> array) {
         // Paramètres : String[] keys
         boolean result = false;
-        if(array.size() > 0) {
+        if (array.size() > 0) {
             result = true;
         }
         return result;
     }
-
 
 
     public static String[] purgeBlanks(String[] strings) {
@@ -181,9 +175,18 @@ public class Server {
             return toReturn;
         }
 
-        ServerObject serverObject = new ServerObject((int) System.currentTimeMillis(), value);
+        ServerObject serverObject = null;
+        if(value instanceof Integer) {
+            serverObject = new ServerObject((int) System.currentTimeMillis(), (int) value);
+        } else if (value instanceof String) {
+            serverObject = new ServerObject((int) System.currentTimeMillis(), (String) value);
+        } else if (value == null) {
+            serverObject = new ServerObject((int) System.currentTimeMillis(), value);
+        } else {
+            System.out.println("Le type de l'objet est inconnu");
+        }
         database.put(key, serverObject);
-        expire(key, expireMillis, new int[]{});
+        expire(key, expireMillis, new String[]{});
 
         return toReturn;
     }
@@ -226,7 +229,7 @@ public class Server {
             la variable nbSuccess est incrémentée
              */
             if (database.containsKey(key)) {
-                if(database.get(key).getExpireMillis() != -1){
+                if (database.get(key).getExpireMillis() != -1) {
                     if (database.get(key).isExpired()) {
                         found = true;
                     } else {
@@ -248,7 +251,7 @@ public class Server {
         if (exists(new String[]{key}) > 0) {
             try {
                 int oldValue = Integer.valueOf(database.get(key).getValue().toString());
-                if(Integer.MAX_VALUE >= oldValue + 1){
+                if (Integer.MAX_VALUE >= oldValue + 1) {
                     newValue = oldValue + 1;
                 } else {
                     newValue = Integer.MAX_VALUE;
@@ -269,7 +272,7 @@ public class Server {
         if (exists(new String[]{key}) > 0) {
             try {
                 int oldValue = Integer.valueOf(database.get(key).getValue().toString());
-                if(Integer.MIN_VALUE <= oldValue - 1){
+                if (Integer.MIN_VALUE <= oldValue - 1) {
                     newValue = oldValue - 1;
                 } else {
                     newValue = Integer.MIN_VALUE;
@@ -288,7 +291,7 @@ public class Server {
     public static int append(String key, String value) {
         int length = value.length();
         try {
-            if(exists(new String[]{key}) > 0){
+            if (exists(new String[]{key}) > 0) {
                 String oldValue = String.valueOf(database.get(key).getValue());
                 String newValue = oldValue + value;
                 database.get(key).setValue(newValue);
@@ -305,96 +308,99 @@ public class Server {
 
     /**
      * Fonction permettant de récupérer une valeur dans la base de données
+     *
      * @param key nom de la valeur à récupérer dans la base de données
      * @return la valeur associée à la clé dans la base de données (retourne null si la valeur n'existe pas)
      */
-    public Object get(String key){
-        Object value = null;
-        if(exists(new String[]{key}) > 0){
-            value = database.get(key).getValue();
+    public Object get(String key) {
+        if (exists(new String[]{key}) > 0) {
+            return database.get(key).getValue();
         }
-        return value;
+        return null;
     }
 
     /**
      * Fonction permettant de mettre une "date limite" sur une variable de la base de données
-     * @param key nom de la valeur où il faut mettre la "date limite"
+     *
+     * @param key     nom de la valeur où il faut mettre la "date limite"
      * @param seconds durée avant laquelle la variable sera expirée
      * @param options option de la commande
-     *               - 0 : applique la "date limite" seulement si la variable n'en possède pas (option NX)
-     *               - 1 : applique la "date limite" uniquement si la variable en possède une (option XX)
-     *               - 2 : applique la "date limite" uniquement si la nouvelle est plus grande que celle qui existe
-     *               (option GR)
-     *               - 3 : applique la "date limite" seulement si la nouvelle est plus petite que celle qui existe
-     *               (option LT)
-     *               - si le tableau options est vide, se lance sans options
+     *                - NX : applique la "date limite" uniquement si la variable n'en possède pas
+     *                - XX : applique la "date limite" uniquement si la variable en possède une
+     *                - GR : applique la "date limite" uniquement si la nouvelle est plus grande que celle qui existe
+     *                - LT : applique la "date limite" uniquement si la nouvelle est plus petite que celle qui existe
+     *                - si le tableau options est vide, se lance sans options
      * @return 1 si l'ajout se passe correctement, 0 sinon
      */
-    public int expire(String key, int seconds, int[] options){
-        if(exists(new String[]{key}) > 0){
+    public int expire(String key, int seconds, String[] options) {
+        if (exists(new String[]{key}) > 0) {
             int expireMillis = seconds * 1000;
-            boolean noProblems = true;
-            for (int option : options) {
-                switch (option) {
-                    case 0:
+            for (int i = 0; i < options.length; i++) {
+                switch (options[i]) {
+                    case "NX":
                         if (!(database.get(key).getExpireMillis() == -1)) {
-                            noProblems = false;
+                            return 0;
                         }
                         break;
-                    case 1:
-                        if (!(database.get(key).getExpireMillis() != -1)) {
-                            noProblems = false;
+                    case "XX":
+                        if (database.get(key).getExpireMillis() == -1) {
+                            return 0;
                         }
                         break;
-                    case 2:
+                    case "GR":
                         if (!(database.get(key).getExpireMillis() < expireMillis)) {
-                            noProblems = false;
+                            return 0;
                         }
                         break;
-                    case 3:
+                    case "LT":
                         if (!(database.get(key).getExpireMillis() > expireMillis)) {
-                            noProblems = false;
+                            return 0;
                         }
                         break;
                     default:
                         break;
                 }
             }
-            if(!(expireMillis == -1 || expireMillis > 0)) {
-                noProblems = false;
-            }
-            if(noProblems) {
+            if (expireMillis == -1 || expireMillis > 0) {
                 database.get(key).setExpireMillis(expireMillis);
                 return 1;
+            } else {
+                return 0;
             }
         }
         return 0;
     }
 
+    /**
+     * Fonction permettant de récupérer la taille d'un objet String
+     *
+     * @param key la clé du String dans la base
+     * @return la taille du String ou le nombre de chiffres de l'Integer, retourne une -1 et affiche une erreur si l'objet n'est pas d'un type géré
+     */
     public static int strlen(String key) {
         int dataLength = -1;
-        try{
-            if(!database.containsKey(key)){
+        try {
+            if (!database.containsKey(key)) {
                 dataLength = 0;
             }
             String value = String.valueOf(database.get(key).getValue());
-            if(value == null){
+            if (value == null) {
                 dataLength = 0;
             } else {
                 dataLength = value.length();
             }
-        } catch(Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return dataLength;
     }
 
     // Getters et Setters
-    public Map<String, ServerObject> getDatabase(){
+    public Map<String, ServerObject> getDatabase() {
         return database;
     }
 
-    public void setDatabase(Map<String, ServerObject> database){
+    public void setDatabase(Map<String, ServerObject> database) {
         this.database = database;
     }
 
