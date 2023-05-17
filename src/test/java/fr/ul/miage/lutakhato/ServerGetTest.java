@@ -11,9 +11,11 @@ public class ServerGetTest {
         Server test = new Server();
 
         // Tests
-        test.set("initial value", 115, new String[0]);
+        test.set("initial value - int", 115, new String[0]);
+        test.set("initial value - str", "Valeur de test", new String[0]);
         assertAll(
-                () -> assertEquals(115, test.get("initial value")),
+                () -> assertEquals(115, test.get("initial value - int")),
+                () -> assertEquals("Valeur de test", test.get("initial value - str")),
                 () -> assertNull(test.get("valeur initiale"))
         );
     }

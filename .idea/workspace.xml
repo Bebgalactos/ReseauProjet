@@ -5,12 +5,12 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="cfb3c5dc-526a-447f-803e-8159ec28dee5" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/uiDesigner.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/test/java/fr/ul/miage/lutakhato/ServerGetTest.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/test/java/fr/ul/miage/lutakhato/ServerSetTest.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.settings/org.eclipse.core.resources.prefs" beforeDir="false" afterPath="$PROJECT_DIR$/.settings/org.eclipse.core.resources.prefs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/fr/ul/miage/lutakhato/Server.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/fr/ul/miage/lutakhato/Server.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test/java/fr/ul/miage/lutakhato/ServerTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/fr/ul/miage/lutakhato/ServerGetTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/fr/ul/miage/lutakhato/ServerGetTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/fr/ul/miage/lutakhato/ServerSetTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/fr/ul/miage/lutakhato/ServerSetTest.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -31,6 +31,7 @@
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+    <option name="UPDATE_TYPE" value="REBASE" />
   </component>
   <component name="MarkdownSettingsMigration">
     <option name="stateVersion" value="1" />
@@ -54,6 +55,7 @@
   "keyToString": {
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "SHARE_PROJECT_CONFIGURATION_FILES": "true",
+    "git-widget-placeholder": "main",
     "last_opened_file_path": "C:/Users/LB-C/Bureau/Workspace/reseau/ReseauProjet/src/test",
     "project.structure.last.edited": "Modules",
     "project.structure.proportion": "0.0",
@@ -70,7 +72,30 @@
       <recent name="C:\Users\LB-C\Bureau\Workspace\reseau\ReseauProjet" />
     </key>
   </component>
-  <component name="RunManager" selected="JUnit.ServerGetTest.testGet">
+  <component name="RunManager" selected="JUnit.All in reseau">
+    <configuration name="All in reseau" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="reseau" />
+      <option name="PACKAGE_NAME" value="" />
+      <option name="TEST_OBJECT" value="package" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="ServerGetTest" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="reseau" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="fr.ul.miage.lutakhato.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="fr.ul.miage.lutakhato" />
+      <option name="MAIN_CLASS_NAME" value="fr.ul.miage.lutakhato.ServerGetTest" />
+      <option name="TEST_OBJECT" value="class" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
     <configuration name="ServerGetTest.testGet" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
       <module name="reseau" />
       <extension name="coverage">
@@ -102,22 +127,6 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
-    <configuration name="ServerSetTest.testSetInteger" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
-      <module name="reseau" />
-      <extension name="coverage">
-        <pattern>
-          <option name="PATTERN" value="fr.ul.miage.lutakhato.*" />
-          <option name="ENABLED" value="true" />
-        </pattern>
-      </extension>
-      <option name="PACKAGE_NAME" value="fr.ul.miage.lutakhato" />
-      <option name="MAIN_CLASS_NAME" value="fr.ul.miage.lutakhato.ServerSetTest" />
-      <option name="METHOD_NAME" value="testSetInteger(java.lang.String,java.lang.Integer)" />
-      <option name="TEST_OBJECT" value="method" />
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
     <configuration name="ServerSetTest.testSetString" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
       <module name="reseau" />
       <extension name="coverage">
@@ -136,10 +145,11 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="JUnit.All in reseau" />
+        <item itemvalue="JUnit.ServerGetTest" />
+        <item itemvalue="JUnit.ServerSetTest" />
         <item itemvalue="JUnit.ServerGetTest.testGet" />
         <item itemvalue="JUnit.ServerSetTest.testSetString" />
-        <item itemvalue="JUnit.ServerSetTest" />
-        <item itemvalue="JUnit.ServerSetTest.testSetInteger" />
       </list>
     </recent_temporary>
   </component>

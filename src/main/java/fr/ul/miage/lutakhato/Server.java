@@ -125,7 +125,7 @@ public class Server {
         return result;
     }
 
-    public static String set(String key, Object value, String[] options) {
+    public String set(String key, Object value, String[] options) {
 
         String toReturn = null;
         options = purgeBlanks(options);
