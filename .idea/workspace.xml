@@ -4,13 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="cfb3c5dc-526a-447f-803e-8159ec28dee5" name="Changes" comment="">
+    <list default="true" id="cfb3c5dc-526a-447f-803e-8159ec28dee5" name="Changes" comment="Correction Maven Test">
+      <change afterPath="$PROJECT_DIR$/src/test/java/fr/ul/miage/lutakhato/ServerExpireTest.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.settings/org.eclipse.core.resources.prefs" beforeDir="false" afterPath="$PROJECT_DIR$/.settings/org.eclipse.core.resources.prefs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/fr/ul/miage/lutakhato/Server.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/fr/ul/miage/lutakhato/Server.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test/java/fr/ul/miage/lutakhato/ServerGetTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/fr/ul/miage/lutakhato/ServerGetTest.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test/java/fr/ul/miage/lutakhato/ServerSetTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/fr/ul/miage/lutakhato/ServerSetTest.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -53,6 +50,7 @@
   </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "SHARE_PROJECT_CONFIGURATION_FILES": "true",
     "git-widget-placeholder": "main",
@@ -72,11 +70,27 @@
       <recent name="C:\Users\LB-C\Bureau\Workspace\reseau\ReseauProjet" />
     </key>
   </component>
-  <component name="RunManager" selected="JUnit.All in reseau">
+  <component name="RunManager" selected="JUnit.ServerExpireTest.testExpire">
     <configuration name="All in reseau" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
       <module name="reseau" />
       <option name="PACKAGE_NAME" value="" />
       <option name="TEST_OBJECT" value="package" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="ServerExpireTest.testExpire" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="reseau" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="fr.ul.miage.lutakhato.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="fr.ul.miage.lutakhato" />
+      <option name="MAIN_CLASS_NAME" value="fr.ul.miage.lutakhato.ServerExpireTest" />
+      <option name="METHOD_NAME" value="testExpire" />
+      <option name="TEST_OBJECT" value="method" />
       <method v="2">
         <option name="Make" enabled="true" />
       </method>
@@ -127,29 +141,13 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
-    <configuration name="ServerSetTest.testSetString" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
-      <module name="reseau" />
-      <extension name="coverage">
-        <pattern>
-          <option name="PATTERN" value="fr.ul.miage.lutakhato.*" />
-          <option name="ENABLED" value="true" />
-        </pattern>
-      </extension>
-      <option name="PACKAGE_NAME" value="fr.ul.miage.lutakhato" />
-      <option name="MAIN_CLASS_NAME" value="fr.ul.miage.lutakhato.ServerSetTest" />
-      <option name="METHOD_NAME" value="testSetString(java.lang.String,java.lang.String)" />
-      <option name="TEST_OBJECT" value="method" />
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="JUnit.ServerExpireTest.testExpire" />
         <item itemvalue="JUnit.All in reseau" />
         <item itemvalue="JUnit.ServerGetTest" />
         <item itemvalue="JUnit.ServerSetTest" />
         <item itemvalue="JUnit.ServerGetTest.testGet" />
-        <item itemvalue="JUnit.ServerSetTest.testSetString" />
       </list>
     </recent_temporary>
   </component>
@@ -162,6 +160,14 @@
       <option name="presentableId" value="Default" />
       <updated>1683728898859</updated>
     </task>
+    <task id="LOCAL-00001" summary="Correction Maven Test">
+      <created>1684319496847</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1684319496847</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -174,5 +180,9 @@
         </entry>
       </map>
     </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="Correction Maven Test" />
+    <option name="LAST_COMMIT_MESSAGE" value="Correction Maven Test" />
   </component>
 </project>
