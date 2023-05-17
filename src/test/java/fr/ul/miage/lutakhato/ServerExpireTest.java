@@ -35,8 +35,8 @@ public class ServerExpireTest {
         test.expire("initial value - 3", 5, new int[]{3});
 
         assertAll(
-                () -> assertEquals(-1, test.getDatabase().get("initial value - int").getExpire()),
-                () -> assertEquals(10 * 1000, test.getDatabase().get("initial value - optionless").getExpire())
+                () -> assertEquals(-1, test.getDatabase().get("initial value - int").getExpireMillis()),
+                () -> assertEquals(10 * 1000, test.getDatabase().get("initial value - optionless").getExpireMillis())
         );
     }
 }
