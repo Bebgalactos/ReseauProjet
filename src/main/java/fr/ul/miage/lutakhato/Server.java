@@ -226,8 +226,8 @@ public class Server {
             la variable nbSuccess est incrémentée
              */
             if (database.containsKey(key)) {
-                if(database.get(key).getExpire() != -1){
-                    if ((System.currentTimeMillis() - database.get(key).getCreationMillis()) < database.get(key).getExpire()) {
+                if(database.get(key).getExpireMillis() != -1){
+                    if ((System.currentTimeMillis() - database.get(key).getCreationMillis()) < database.get(key).getExpireMillis()) {
                         found = true;
                     } else {
                         database.remove(key);
@@ -337,22 +337,22 @@ public class Server {
             for (int option : options) {
                 switch (option) {
                     case 0:
-                        if (!(database.get(key).getExpire() == -1)) {
+                        if (!(database.get(key).getExpireMillis() == -1)) {
                             noProblems = false;
                         }
                         break;
                     case 1:
-                        if (!(database.get(key).getExpire() != -1)) {
+                        if (!(database.get(key).getExpireMillis() != -1)) {
                             noProblems = false;
                         }
                         break;
                     case 2:
-                        if (!(database.get(key).getExpire() < expireMillis)) {
+                        if (!(database.get(key).getExpireMillis() < expireMillis)) {
                             noProblems = false;
                         }
                         break;
                     case 3:
-                        if (!(database.get(key).getExpire() > expireMillis)) {
+                        if (!(database.get(key).getExpireMillis() > expireMillis)) {
                             noProblems = false;
                         }
                         break;
@@ -364,11 +364,29 @@ public class Server {
                 noProblems = false;
             }
             if(noProblems) {
-                database.get(key).setExpire(expireMillis);
+                database.get(key).setExpireMillis(expireMillis);
                 return 1;
             }
         }
         return 0;
+    }
+
+    public static int strlen(String key) {
+        int dataLength = -1;
+        try{
+            if(!database.containsKey(key)){
+                dataLength = 0;
+            }
+            String value = String.valueOf(database.get(key).getValue());
+            if(value == null){
+                dataLength = 0;
+            } else {
+                dataLength = value.length();
+            }
+        } catch(Exception e){
+            e.printStackTrace();
+        }
+        return dataLength;
     }
 
     // Getters et Setters
