@@ -3,7 +3,6 @@ package fr.ul.miage.lutakhato;
 import java.util.*;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-import fr.ul.miage.lutakhato.Syntax;
 
 public class Server {
 
@@ -171,8 +170,9 @@ public class Server {
 
         for (String key : keys) {
             if (database.containsKey(key)) {
-                if (database.get(key).getExpireMillis() >= 0) {
-                    if ((System.currentTimeMillis() - database.get(key).getCreationMillis()) > database.get(key).getExpireMillis()) {
+                ServerObject serverObject = database.get(key);
+                if (serverObject.getExpireMillis() >= 0) {
+                    if (serverObject.isExpired()) {
                         // La clé a expiré, nous la supprimons
                         database.remove(key);
                     } else {
@@ -270,8 +270,8 @@ public class Server {
      * @param options option de la commande
      *                - NX : applique la "date limite" uniquement si la variable n'en possède pas
      *                - XX : applique la "date limite" uniquement si la variable en possède une
-     *                - GR : applique la "date limite" uniquement si la nouvelle est plus grande que celle qui existe
-     *                - LT : applique la "date limite" uniquement si la nouvelle est plus petite que celle qui existe
+     *                - GR : applique la "date limite" uniquement si la nouvelle est plus grande que celle qui existe (on considère -1 comme l'infini et infini > x)
+     *                - LT : applique la "date limite" uniquement si la nouvelle est plus petite que celle qui existe (on considère -1 comme l'infini et infini > x)
      *                - si le tableau options est vide, se lance sans options
      * @return 1 si l'ajout se passe correctement, 0 sinon
      */
@@ -291,12 +291,12 @@ public class Server {
                         }
                         break;
                     case "GR":
-                        if (!(database.get(key).getExpireMillis() < expireMillis)) {
+                        if (database.get(key).getExpireMillis() == -1 || !(database.get(key).getExpireMillis() < expireMillis)) {
                             return 0;
                         }
                         break;
                     case "LT":
-                        if (!(database.get(key).getExpireMillis() > expireMillis)) {
+                        if (database.get(key).getExpireMillis() != -1 || !(database.get(key).getExpireMillis() > expireMillis)) {
                             return 0;
                         }
                         break;
@@ -304,12 +304,8 @@ public class Server {
                         break;
                 }
             }
-            if (expireMillis == -1 || expireMillis > 0) {
-                database.get(key).setExpireMillis(expireMillis);
-                return 1;
-            } else {
-                return 0;
-            }
+            database.get(key).setExpireMillis(expireMillis);
+            return 1;
         }
         return 0;
     }
@@ -363,8 +359,36 @@ public class Server {
         if (array.size() > 1) {
             result = true;
         }
-        // Check syntax options -------------------------------------------------
-        return result;
+        return syntaxCheckSetOptions(array.subList(2, array.size()));
+    }
+
+    private static boolean syntaxCheckSetOptions(List<String> array) {
+        if (array.size() > 0) {
+            for (int i = 0; i < array.size(); i++) {
+                switch (array.get(i)) {
+                    case "EX":
+                    case "PX":
+                        if (array.size() - 1 > i) {
+                            try {
+                                int expireTime = Integer.valueOf(array.get(i + 1));
+                            } catch (Exception e) {
+                                return false;
+                            }
+                            i++;
+                        }
+                        break;
+
+                    case "NX":
+                    case "XX":
+                    case "GET":
+                        break;
+
+                    default:
+                        return false;
+                }
+            }
+        }
+        return true;
     }
 
     private static boolean syntaxCheckExpire(List<String> array) {
@@ -372,13 +396,30 @@ public class Server {
         if (array.size() > 1) {
             try {
                 int isInt = Integer.valueOf(array.get(1));
-                return true;
             } catch (Exception e) {
                 return false;
             }
         }
-        // Check syntax options -------------------------------------------------
-        return false;
+        return syntaxCheckExpireOptions(array.subList(2, array.size()));
+    }
+
+
+    private static boolean syntaxCheckExpireOptions(List<String> array) {
+        if(array.size() > 0) {
+            for(int i = 0; i < array.size(); i++){
+                switch (array.get(i)) {
+                    case "NX":
+                    case "XX":
+                    case "GR":
+                    case "LT":
+                        break;
+
+                    default:
+                        return false;
+                }
+            }
+        }
+        return true;
     }
 
     private static boolean syntaxCheckDelExists(List<String> array) {
