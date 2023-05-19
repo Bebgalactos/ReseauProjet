@@ -21,9 +21,6 @@
         <!-- Nom du script a éxecuter (bindist) -->
         <project.client.bin.appname>runClient</project.client.bin.appname>
         <project.server.bin.appname>runServer</project.server.bin.appname>
-        <!-- Propriété de création du README.txt -->
-        <commons.componentid>chain</commons.componentid>
-        <commons.release.version>1.4</commons.release.version>
         <!-- Propriété des tests -->
         <junit.version>5.9.2</junit.version>
     </properties>
