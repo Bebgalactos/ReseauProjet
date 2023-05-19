@@ -1,17 +1,14 @@
 package fr.ul.miage.lutakhato;
 
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
-
-import java.util.HashMap;
-import java.util.Map;
+import org.junit.jupiter.api.Test;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class ServerTest {
+public class ServerDelTest {
 
     @ParameterizedTest(name = "{0} + {1} = {2}")
     @CsvSource({
@@ -20,15 +17,14 @@ public class ServerTest {
             "49, 51, 100",
             "1, 100, 101"
     })
-    @org.junit.Test
     public void testDelAvecClesExistantes() {
         // Réinitialiser la Map database avant chaque test
         Server.getDatabase().clear();
 
         // Ajouter les clés à supprimer dans la Map database
-        Server.getDatabase().put("key1", new ServerObject(0, -1, "valeur1"));
-        Server.getDatabase().put("key2", new ServerObject(0, -1, "valeur2"));
-        Server.getDatabase().put("key3", new ServerObject(0, -1, "valeur3"));
+        Server.getDatabase().put("key1", new ServerObject(0, "valeur1"));
+        Server.getDatabase().put("key2", new ServerObject(0, "valeur2"));
+        Server.getDatabase().put("key3", new ServerObject(0, "valeur3"));
 
         // Appeler la méthode del avec les clés existantes
         int nbSuccess = Server.del(new String[]{"key1", "key2"});
@@ -42,13 +38,13 @@ public class ServerTest {
         assertEquals(2, nbSuccess);
     }
 
-    @org.junit.Test
+    @Test
     public void testDelAvecClesInexistantes() {
         // Réinitialiser la Map database avant chaque test
         Server.getDatabase().clear();
 
         // Ajouter une clé existante dans la Map database
-        Server.getDatabase().put("key1", new ServerObject(0, -1, "valeur1"));
+        Server.getDatabase().put("key1", new ServerObject(0, "valeur1"));
 
         // Appeler la méthode del avec des clés inexistantes
         int nbSuccess = Server.del(new String[]{"key2", "key3"});
@@ -60,13 +56,13 @@ public class ServerTest {
         assertEquals(0, nbSuccess);
     }
 
-    @org.junit.Test
+    @Test
     public void testDelAvecCleExistanteEtCleInexistante() {
         // Réinitialiser la Map database avant chaque test
         Server.getDatabase().clear();
 
         // Ajouter une clé existante dans la Map database
-        Server.getDatabase().put("key1", new ServerObject(0, -1, "valeur1"));
+        Server.getDatabase().put("key1", new ServerObject(0, "valeur1"));
 
         // Appeler la méthode del avec une clé existante et une clé inexistante
         int nbSuccess = Server.del(new String[]{"key1", "key2"});
@@ -79,13 +75,21 @@ public class ServerTest {
     }
 
 
+    @Test
+    public void testDelExpire() {
+        // Réinitialiser la Map database avant chaque test
+        Server.getDatabase().clear();
 
+        // Ajouter une clé existante dans la Map database
+        Server.getDatabase().put("key1", new ServerObject(0, "valeur1"));
 
+        // Appeler la méthode del avec une clé existante et une clé inexistante
+        int nbSuccess = Server.del(new String[]{"key1", "key2"});
 
+        // Vérifier que la clé existante a été supprimée de la Map database
+        assertNull(Server.getDatabase().get("key1"));
 
-
-
-
-
-
+        // Vérifier que le nombre de clés supprimées est correct
+        assertEquals(1, nbSuccess);
+    }
 }

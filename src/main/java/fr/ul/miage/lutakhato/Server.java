@@ -3,6 +3,7 @@ package fr.ul.miage.lutakhato;
 import java.util.*;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+import fr.ul.miage.lutakhato.Syntax;
 
 public class Server {
 
@@ -24,7 +25,7 @@ public class Server {
 
         // Vérification de l'existence de la requête
         String firstKeyword = entryParts[0];
-        boolean requestExists = Arrays.stream(keyWords).anyMatch(keyword -> keyword.equals(firstKeyword));
+        boolean requestExists = Arrays.stream(keyWords).anyMatch(keyword -> keyword.equals(firstKeyword.toUpperCase()));
         if (!requestExists) {
             return false;
         }
@@ -50,57 +51,6 @@ public class Server {
         }
     }
 
-
-    private static boolean syntaxCheckIncrDecrGet(List<String> array) {
-        // Paramètres : String key
-        boolean result = false;
-        if (array.size() == 1) {
-            result = true;
-        }
-        return result;
-    }
-
-    private static boolean syntaxCheckAppend(List<String> array) {
-        // Paramètres : String key, String value
-        boolean result = false;
-        if (array.size() == 2) {
-            result = true;
-        }
-        return result;
-    }
-
-    private static boolean syntaxCheckSet(List<String> array) {
-        // Paramètres : String key, String value, String[] options
-        boolean result = false;
-        if (array.size() > 1) {
-            result = true;
-        }
-        return result;
-    }
-
-    private static boolean syntaxCheckExpire(List<String> array) {
-        // Paramètres : String key, int expireMillis, String[] options
-        if (array.size() > 1) {
-            try {
-                int isInt = Integer.valueOf(array.get(1));
-                return true;
-            } catch (NumberFormatException e) {
-                return false;
-            }
-        }
-        return false;
-    }
-
-    private static boolean syntaxCheckDelExists(List<String> array) {
-        // Paramètres : String[] keys
-        boolean result = false;
-        if (array.size() > 0) {
-            result = true;
-        }
-        return result;
-    }
-
-
     public static String[] purgeBlanks(String[] strings) {
         // Créer une liste pour stocker les éléments non vides
         List<String> nonEmptyStrings = new ArrayList<String>();
@@ -122,7 +72,6 @@ public class Server {
     public String set(String key, Object value, String[] options) {
 
         String toReturn = null;
-        options = purgeBlanks(options);
         int expireMillis = -1;
 
         try {
@@ -222,7 +171,7 @@ public class Server {
 
         for (String key : keys) {
             if (database.containsKey(key)) {
-                if (database.get(key).getExpireMillis() != -1) {
+                if (database.get(key).getExpireMillis() >= 0) {
                     if ((System.currentTimeMillis() - database.get(key).getCreationMillis()) > database.get(key).getExpireMillis()) {
                         // La clé a expiré, nous la supprimons
                         database.remove(key);
@@ -389,7 +338,59 @@ public class Server {
         return dataLength;
     }
 
-    // Getters et Setters
+    // Syntax ----------------------------------------------------------------
+    private static boolean syntaxCheckIncrDecrGet(List<String> array) {
+        // Paramètres : String key
+        boolean result = false;
+        if (array.size() == 1) {
+            result = true;
+        }
+        return result;
+    }
+
+    private static boolean syntaxCheckAppend(List<String> array) {
+        // Paramètres : String key, String value
+        boolean result = false;
+        if (array.size() == 2) {
+            result = true;
+        }
+        return result;
+    }
+
+    private static boolean syntaxCheckSet(List<String> array) {
+        // Paramètres : String key, String value, String[] options
+        boolean result = false;
+        if (array.size() > 1) {
+            result = true;
+        }
+        // Check syntax options -------------------------------------------------
+        return result;
+    }
+
+    private static boolean syntaxCheckExpire(List<String> array) {
+        // Paramètres : String key, int expireMillis, String[] options
+        if (array.size() > 1) {
+            try {
+                int isInt = Integer.valueOf(array.get(1));
+                return true;
+            } catch (Exception e) {
+                return false;
+            }
+        }
+        // Check syntax options -------------------------------------------------
+        return false;
+    }
+
+    private static boolean syntaxCheckDelExists(List<String> array) {
+        // Paramètres : String[] keys
+        boolean result = false;
+        if (array.size() > 0) {
+            result = true;
+        }
+        return result;
+    }
+
+    // Getters et Setters ----------------------------------------------------------------
     public static Map<String, ServerObject> getDatabase() {
         return database;
     }
@@ -397,5 +398,4 @@ public class Server {
     public void setDatabase(Map<String, ServerObject> database) {
         this.database = database;
     }
-
 }
