@@ -218,31 +218,25 @@ public class Server {
     de clés existantes dans la map donné en entrée
     */
     public static int exists(String[] keys) {
-        // nbSuccess est initialisée à 0 et c'est le résultat de la méthode
         int nbSuccess = 0;
-        boolean found = false;
 
-        // on itère sur le tableau de clés
         for (String key : keys) {
-             /*
-            Si la clé existe dans la Map et n'est pas expirée,
-            la variable nbSuccess est incrémentée
-             */
             if (database.containsKey(key)) {
                 if (database.get(key).getExpireMillis() != -1) {
-                    if (database.get(key).isExpired()) {
-                        found = true;
-                    } else {
+                    if ((System.currentTimeMillis() - database.get(key).getCreationMillis()) > database.get(key).getExpireMillis()) {
+                        // La clé a expiré, nous la supprimons
                         database.remove(key);
+                    } else {
+                        // La clé existe et n'a pas expiré
+                        nbSuccess++;
                     }
                 } else {
-                    found = true;
+                    // La clé existe sans expiration
+                    nbSuccess++;
                 }
             }
-            if (found) {
-                nbSuccess++;
-            }
         }
+
         return nbSuccess;
     }
 
@@ -396,7 +390,7 @@ public class Server {
     }
 
     // Getters et Setters
-    public Map<String, ServerObject> getDatabase() {
+    public static Map<String, ServerObject> getDatabase() {
         return database;
     }
 
