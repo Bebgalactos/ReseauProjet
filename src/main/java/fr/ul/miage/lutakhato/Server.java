@@ -17,7 +17,7 @@ public class Server {
 
     public static boolean syntaxCheck(String entry) {
         // Récupération des mots clés entrés
-        String[] entryParts = purgeBlanks(entry.split(" "));
+        String[] entryParts = purgeBlanksNormalizeStrings(entry);
         if (entryParts.length == 0) {
             return false;
         }
@@ -48,24 +48,6 @@ public class Server {
             default:
                 return false;
         }
-    }
-
-    public static String[] purgeBlanks(String[] strings) {
-        // Créer une liste pour stocker les éléments non vides
-        List<String> nonEmptyStrings = new ArrayList<String>();
-
-        // Parcourir chaque élément du tableau
-        for (String str : strings) {
-            // Vérifier si l'élément est différent de la chaîne de caractères vide
-            if (!str.equals("")) {
-                // Ajouter l'élément non vide à la liste
-                nonEmptyStrings.add(str);
-            }
-        }
-
-        // Convertir la liste en un nouveau tableau
-        String[] result = nonEmptyStrings.toArray(new String[0]);
-        return result;
     }
 
     public String set(String key, Object value, String[] options) {
@@ -363,12 +345,43 @@ public class Server {
         return false;
     }
 
+    /**
+     * Check si la syntaxe de la requête set est correcte et limite le nombre d'arguments pour éviter les requêtes monstrueuses
+     * @param array Liste des arguments en référence à la fonction set, en évitant multiples arguments du même type ((EX, PX) et (NX, XX))
+     * @return true si la syntaxe de la requête set est correcte, false sinon
+     */
     private static boolean syntaxCheckSetOptions(List<String> array) {
+        Map<String, Boolean> options = new HashMap<String, Boolean>(){{
+            put("EX", false);
+            put("PX", false);
+            put("NX", false);
+            put("XX", false);
+            put("GET", false);
+        }};
         if (array.size() > 0) {
             for (int i = 0; i < array.size(); i++) {
                 switch (array.get(i)) {
                     case "EX":
+                        if(!options.get("EX") && !options.get("PX")){
+                            options.replace("EX", true);
+                        } else {
+                            return false;
+                        }
+                        if (array.size() - 1 > i) {
+                            try {
+                                int expireTime = Integer.valueOf(array.get(i + 1));
+                            } catch (Exception e) {
+                                return false;
+                            }
+                            i++;
+                        }
+                        break;
                     case "PX":
+                        if(!options.get("EX") && !options.get("PX")){
+                            options.replace("PX", true);
+                        } else {
+                            return false;
+                        }
                         if (array.size() - 1 > i) {
                             try {
                                 int expireTime = Integer.valueOf(array.get(i + 1));
@@ -380,8 +393,25 @@ public class Server {
                         break;
 
                     case "NX":
+                        if(!options.get("NX") && !options.get("XX")){
+                            options.replace("NX", true);
+                        } else {
+                            return false;
+                        }
+                        break;
                     case "XX":
+                        if(!options.get("NX") && !options.get("XX")){
+                            options.replace("XX", true);
+                        } else {
+                            return false;
+                        }
+                        break;
                     case "GET":
+                        if(!options.get("GET")){
+                            options.replace("GET", true);
+                        } else {
+                            return false;
+                        }
                         break;
 
                     default:
@@ -390,6 +420,50 @@ public class Server {
             }
         }
         return true;
+    }
+
+    // Sous-fonctions ----------------------------------------------------------------
+
+    public static String[] purgeBlanksNormalizeStrings(String input) {
+        List<String> extractedStrings = new ArrayList<>();
+
+        StringBuilder currentString = new StringBuilder();
+        boolean insideQuotes = false;
+        boolean escapeBackSlash = false;
+
+        for (int i = 0; i < input.length(); i++) {
+            char c = input.charAt(i);
+
+            if (c == '"') {
+                if (!escapeBackSlash) {
+                    // Début ou fin des guillemets englobants
+                    insideQuotes = !insideQuotes;
+                    continue;
+                } else {
+                    // Guillemet échappé (\"), ajouter un guillemet dans la chaîne courante
+                    currentString.append(c);
+                    escapeBackSlash = false;
+                }
+            } else if (c == '\\' && insideQuotes && i + 1 < input.length() && input.charAt(i + 1) == '"') {
+                // Guillemet non échappé (\") sous la forme \"
+                escapeBackSlash = true;
+                continue;
+            } else if (c == ' ' && !insideQuotes) {
+                if (currentString.length() > 0) {
+                    extractedStrings.add(currentString.toString());
+                    currentString.setLength(0);
+                }
+                continue;
+            }
+
+            currentString.append(c);
+        }
+
+        if (currentString.length() > 0) {
+            extractedStrings.add(currentString.toString());
+        }
+
+        return extractedStrings.toArray(new String[0]);
     }
 
     private static boolean syntaxCheckExpire(List<String> array) {

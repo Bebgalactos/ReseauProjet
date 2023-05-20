@@ -10,6 +10,57 @@ public class ServerSyntaxCheckTest {
 
     @ParameterizedTest(name = "{0}")
     @CsvSource({
+            "set ki001 barrels",
+            "set                ki001                barrels",
+            "SET ki002 10000",
+            "SET ki002 -1000",
+            "SET ki002 10000 EX 10",
+            "SET ki002 10000 PX 10000",
+            "SET ki002 10000 NX",
+            "SET ki002 10000 XX",
+            "SET ki002 10000 EX 10 NX",
+            "SET ki002 10000 EX 10 XX",
+            "SET ki002 10000 PX 10000 NX",
+            "SET ki002 10000 PX 10000 XX",
+            "SET ki002 plouk EX 10 XX",
+            "SET ki002 plouk PX 10000 NX",
+            "SET ki002 plouk PX 10000 XX",
+            "SET ki002 plouk EX 10",
+            "SET ki002 plouk PX 10000",
+            "SET ki002 plouk NX",
+            "SET ki002 plouk XX",
+            "SET ki002 plouk EX 10 NX",
+            "SET ki002 plouk EX 10 XX",
+            "SET ki002 plouk PX 10000 NX",
+            "SET ki002 plouk PX 10000 XX",
+            "set ki001 \"barrels with spaces between them\"",
+            "set \"key with spaces\" barrels",
+            "set \"key with spaces\" \"barrels with spaces between them\"",
+            "set \"key with spaces\" \"\\\"cette chaine de caractères est entre guillemets\\\"\"",
+            "set \"key with spaces\" \"cette \\\"chaine de caractères\\\" n'est pas entre guillemets\"",
+            "set \"key with spaces\" \\",
+    })
+    public void testGoodSyntaxSet(String entry){
+        assertTrue(syntaxCheck(entry));
+    }
+
+    @ParameterizedTest(name = "{0}")
+    @CsvSource({
+            "SET ki001",
+            "SET ki001 barrels spaced",
+            "SET ki002 -1000 NX XX",
+            "SET ki002 -1000 EX 10 PX 10000",
+            "SET ki002 -1000 EX 10 EX 10",
+            "SET ki002 -1000 PX 10000 PX 10000",
+            "SET ki002 -1000 NX NX",
+            "SET ki002 -1000 XX XX",
+    })
+    public void testBadSyntaxSet(String entry){
+        assertFalse(syntaxCheck(entry));
+    }
+
+    @ParameterizedTest(name = "{0}")
+    @CsvSource({
             "append ki001 _passante",
             "APPEND ki001 toAppend",
             "GET ki002",
@@ -23,9 +74,6 @@ public class ServerSyntaxCheckTest {
             "EXPIRE ki002 -100 NX XX GR LT",
             "INCR ki002",
             "DECR ki002",
-            "set ki001 bande",
-            "SET ki002 1000",
-            "SET ki002 -1000",
             "get ki002",
             "DEL ki002",
             "DEL ksjhfbisevbofesief 0",
@@ -37,7 +85,6 @@ public class ServerSyntaxCheckTest {
 
     @ParameterizedTest(name = "{0}")
     @CsvSource({
-            "SET ki001 bande lmao",
             "GET ki002 asd",
             "EXPIRE ki002",
             "EXPIRE ki002 cheh",
