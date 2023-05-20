@@ -31,7 +31,7 @@ public class Server {
 
         // Vérification des paramètres
         List<String> exceptFirst = Arrays.stream(entryParts, 1, entryParts.length).collect(Collectors.toList());
-        switch (firstKeyword) {
+        switch (firstKeyword.toUpperCase()) {
             case "APPEND":
                 return syntaxCheckAppend(exceptFirst);
             case "INCR":
@@ -358,8 +358,9 @@ public class Server {
         boolean result = false;
         if (array.size() > 1) {
             result = true;
+            return syntaxCheckSetOptions(array.subList(2, array.size()));
         }
-        return syntaxCheckSetOptions(array.subList(2, array.size()));
+        return false;
     }
 
     private static boolean syntaxCheckSetOptions(List<String> array) {
@@ -399,8 +400,9 @@ public class Server {
             } catch (Exception e) {
                 return false;
             }
+            return syntaxCheckExpireOptions(array.subList(2, array.size()));
         }
-        return syntaxCheckExpireOptions(array.subList(2, array.size()));
+        return false;
     }
 
 
