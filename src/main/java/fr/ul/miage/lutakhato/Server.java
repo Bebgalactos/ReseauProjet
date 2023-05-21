@@ -56,21 +56,23 @@ public class Server {
         int expireMillis = -1;
 
         try {
-            for (int i = 0; i < options.length; i = i + 1) {
+            for (int i = 0; i < options.length; i++) {
                 // Options :
                 // EX seconds -- Set the specified expire time, in seconds.
                 // PX milliseconds -- Set the specified expire time, in milliseconds.
                 // NX -- Only set the key if it does not already exist.
                 // XX -- Only set the key if it already exists.
                 // GET -- Return the old string stored at key, or nil if key did not exist. An error is returned and SET aborted if the value stored at key is not a string.
-                String option = options[i];
+                String option = options[i].toUpperCase();
                 switch (option) {
                     case "EX":
                         expireMillis = 1000 * Integer.valueOf(options[i + 1]);
+                        i++;
                         break;
 
                     case "PX":
                         expireMillis = Integer.valueOf(options[i + 1]);
+                        i++;
                         break;
 
                     case "NX":
@@ -107,16 +109,15 @@ public class Server {
 
         ServerObject serverObject = null;
         if(value instanceof Integer) {
-            serverObject = new ServerObject((int) System.currentTimeMillis(), (int) value);
+            serverObject = new ServerObject(expireMillis, (int) value);
         } else if (value instanceof String) {
-            serverObject = new ServerObject((int) System.currentTimeMillis(), (String) value);
+            serverObject = new ServerObject(expireMillis, (String) value);
         } else if (value == null) {
-            serverObject = new ServerObject((int) System.currentTimeMillis(), value);
+            serverObject = new ServerObject(expireMillis, value);
         } else {
             System.out.println("Le type de l'objet est inconnu");
         }
         database.put(key, serverObject);
-        expire(key, expireMillis, new String[]{});
 
         return toReturn;
     }
@@ -136,7 +137,7 @@ public class Server {
             elle est supprimée à l'aide de la méthode remove(),
             et la variable res est incrémentée
              */
-            if (exists(new String[]{key}) > 0) {
+            if (database.containsKey(key)) {
                 database.remove(key);
                 nbSuccess++;
             }
@@ -156,7 +157,7 @@ public class Server {
                 if (serverObject.getExpireMillis() >= 0) {
                     if (serverObject.isExpired()) {
                         // La clé a expiré, nous la supprimons
-                        database.remove(key);
+                        del(new String[]{key});
                     } else {
                         // La clé existe et n'a pas expiré
                         nbSuccess++;
@@ -186,7 +187,7 @@ public class Server {
                 System.out.println("On ne peut pas incrémenter sur un String");
             }
         } else {
-            ServerObject serverObject = new ServerObject((int) System.currentTimeMillis(), -1, newValue);
+            ServerObject serverObject = new ServerObject(-1, newValue);
             database.put(key, serverObject);
         }
         return newValue;
@@ -207,7 +208,7 @@ public class Server {
                 System.out.println("On ne peut pas incrementer sur une chaine de caracteres");
             }
         } else {
-            ServerObject serverObject = new ServerObject((int) System.currentTimeMillis(), -1, newValue);
+            ServerObject serverObject = new ServerObject(-1, newValue);
             database.put(key, serverObject);
         }
         return newValue;
@@ -222,7 +223,7 @@ public class Server {
                 database.get(key).setValue(newValue);
             } else {
                 length = 0;
-                ServerObject serverObject = new ServerObject((int) System.currentTimeMillis(), -1, "");
+                ServerObject serverObject = new ServerObject(-1, "");
                 database.put(key, serverObject);
             }
         } catch (Exception e) {
@@ -252,7 +253,7 @@ public class Server {
      * @param options option de la commande
      *                - NX : applique la "date limite" uniquement si la variable n'en possède pas
      *                - XX : applique la "date limite" uniquement si la variable en possède une
-     *                - GR : applique la "date limite" uniquement si la nouvelle est plus grande que celle qui existe (on considère -1 comme l'infini et infini > x)
+     *                - GT : applique la "date limite" uniquement si la nouvelle est plus grande que celle qui existe (on considère -1 comme l'infini et infini > x)
      *                - LT : applique la "date limite" uniquement si la nouvelle est plus petite que celle qui existe (on considère -1 comme l'infini et infini > x)
      *                - si le tableau options est vide, se lance sans options
      * @return 1 si l'ajout se passe correctement, 0 sinon
@@ -261,7 +262,7 @@ public class Server {
         if (exists(new String[]{key}) > 0) {
             int expireMillis = seconds * 1000;
             for (int i = 0; i < options.length; i++) {
-                switch (options[i]) {
+                switch (options[i].toUpperCase()) {
                     case "NX":
                         if (!(database.get(key).getExpireMillis() == -1)) {
                             return 0;
@@ -272,13 +273,13 @@ public class Server {
                             return 0;
                         }
                         break;
-                    case "GR":
+                    case "GT":
                         if (database.get(key).getExpireMillis() == -1 || !(database.get(key).getExpireMillis() < expireMillis)) {
                             return 0;
                         }
                         break;
                     case "LT":
-                        if (database.get(key).getExpireMillis() != -1 || !(database.get(key).getExpireMillis() > expireMillis)) {
+                        if (database.get(key).getExpireMillis() != -1 && !(database.get(key).getExpireMillis() > expireMillis)) {
                             return 0;
                         }
                         break;
@@ -360,7 +361,7 @@ public class Server {
         }};
         if (array.size() > 0) {
             for (int i = 0; i < array.size(); i++) {
-                switch (array.get(i)) {
+                switch (array.get(i).toUpperCase()) {
                     case "EX":
                         if(!options.get("EX") && !options.get("PX")){
                             options.replace("EX", true);
@@ -471,6 +472,9 @@ public class Server {
         if (array.size() > 1) {
             try {
                 int isInt = Integer.valueOf(array.get(1));
+                if (isInt <= 0) {
+                    return false;
+                }
             } catch (Exception e) {
                 return false;
             }
@@ -481,13 +485,43 @@ public class Server {
 
 
     private static boolean syntaxCheckExpireOptions(List<String> array) {
+        Map<String, Boolean> options = new HashMap<String, Boolean>(){{
+            put("NX", false);
+            put("XX", false);
+            put("GT", false);
+            put("LT", false);
+        }};
+
         if(array.size() > 0) {
             for(int i = 0; i < array.size(); i++){
-                switch (array.get(i)) {
+                switch (array.get(i).toUpperCase()) {
                     case "NX":
+                        if (!options.get(array.get(i).toUpperCase()) && !options.get("XX")) {
+                            options.replace(array.get(i).toUpperCase(), true);
+                        } else {
+                            return false;
+                        }
+                        break;
                     case "XX":
-                    case "GR":
+                        if (!options.get(array.get(i).toUpperCase()) && !options.get("NX")) {
+                            options.replace(array.get(i).toUpperCase(), true);
+                        } else {
+                            return false;
+                        }
+                        break;
+                    case "GT":
+                        if (!options.get(array.get(i).toUpperCase()) && !options.get("LT")) {
+                            options.replace(array.get(i).toUpperCase(), true);
+                        } else {
+                            return false;
+                        }
+                        break;
                     case "LT":
+                        if (!options.get(array.get(i).toUpperCase()) && !options.get("GT")) {
+                            options.replace(array.get(i).toUpperCase(), true);
+                        } else {
+                            return false;
+                        }
                         break;
 
                     default:

@@ -16,7 +16,7 @@ public class ServerSyntaxCheckTest {
             "SET ki002 -1000",
             "SET ki002 10000 EX 10",
             "SET ki002 10000 PX 10000",
-            "SET ki002 10000 NX",
+            "SET ki002 10000 nx",
             "SET ki002 10000 XX",
             "SET ki002 10000 EX 10 NX",
             "SET ki002 10000 EX 10 XX",
@@ -24,8 +24,8 @@ public class ServerSyntaxCheckTest {
             "SET ki002 10000 PX 10000 XX",
             "SET ki002 plouk EX 10 XX",
             "SET ki002 plouk PX 10000 NX",
-            "SET ki002 plouk PX 10000 XX",
-            "SET ki002 plouk EX 10",
+            "SET ki002 plouk px 10000 xx",
+            "SET ki002 plouk ex 10",
             "SET ki002 plouk PX 10000",
             "SET ki002 plouk NX",
             "SET ki002 plouk XX",
@@ -36,9 +36,12 @@ public class ServerSyntaxCheckTest {
             "set ki001 \"barrels with spaces between them\"",
             "set \"key with spaces\" barrels",
             "set \"key with spaces\" \"barrels with spaces between them\"",
+            "set \"key with spaces\" \"one parameter forever                                               ",
             "set \"key with spaces\" \"\\\"cette chaine de caractères est entre guillemets\\\"\"",
             "set \"key with spaces\" \"cette \\\"chaine de caractères\\\" n'est pas entre guillemets\"",
             "set \"key with spaces\" \\",
+            "set \"key with spaces\" \"cette \\\"guillemet\\\" est conservée\"",
+
     })
     public void testGoodSyntaxSet(String entry){
         assertTrue(syntaxCheck(entry));
@@ -66,12 +69,10 @@ public class ServerSyntaxCheckTest {
             "GET ki002",
             "EXISTS ki001 ki002 key17 team17 trombone hurluberlu",
             "EXPIRE ki002 100",
-            "EXPIRE ki002 -100",
-            "EXPIRE ki002 -100 NX",
-            "EXPIRE ki002 -100 XX",
-            "EXPIRE ki002 -100 GR",
-            "EXPIRE ki002 -100 LT",
-            "EXPIRE ki002 -100 NX XX GR LT",
+            "EXPIRE ki002 100 NX",
+            "EXPIRE ki002 100 XX",
+            "EXPIRE ki002 100 GT",
+            "EXPIRE ki002 100 LT",
             "INCR ki002",
             "DECR ki002",
             "get ki002",
@@ -96,6 +97,35 @@ public class ServerSyntaxCheckTest {
             "APPEND", "DECR", "DEL", "EXISTS", "EXPIRE", "GET", "INCR", "SET"
     })
     public void testBadSyntax(String entry){
+        assertFalse(syntaxCheck(entry));
+    }
+
+    @ParameterizedTest(name = "{0}")
+    @CsvSource({
+            "expire ki001 10",
+            "expire                ki001                15",
+            "expire k1001 " + Integer.MAX_VALUE,
+            "expire ki002 10 NX",
+            "expire k1001 10 xx",
+            "expire k1001 10 lt",
+            "expire k1001 10 gt",
+    })
+    public void testGoodSyntaxExpire(String entry){
+        assertTrue(syntaxCheck(entry));
+    }
+
+    @ParameterizedTest(name = "{0}")
+    @CsvSource({
+            "expire ki001",
+            "expire ki001 -1",
+            "expire ki002 " + Integer.MIN_VALUE,
+            "expire",
+            "expire k1002 0",
+            "expire ki002 cheh",
+            "expire ki002 -",
+            "expire ki002 1000 er",
+    })
+    public void testBadSyntaxExpire(String entry){
         assertFalse(syntaxCheck(entry));
     }
 
