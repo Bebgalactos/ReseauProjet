@@ -15,19 +15,24 @@ public class Server {
 
     }
 
+    /**
+     * Fonction permettant de vérifier la syntaxe d'une entrée
+     *
+     * @param entry entrée dont on veut vérifier la syntaxe
+     * @return true si la syntaxe est bonne, false sinon
+     */
     public static boolean syntaxCheck(String entry) {
         // Récupération des mots clés entrés
         String[] entryParts = purgeBlanksNormalizeStrings(entry);
-        if (entryParts.length == 0) {
+
+        // Vérification de l'existence de la requête
+        if (entryParts.length == 0 || !Arrays.stream(keyWords)
+                .anyMatch(keyword -> keyword.equalsIgnoreCase(entryParts[0]))) {
             return false;
         }
 
-        // Vérification de l'existence de la requête
+        // Récupération du premier argument correspondant à la fonction appelée
         String firstKeyword = entryParts[0];
-        boolean requestExists = Arrays.stream(keyWords).anyMatch(keyword -> keyword.equals(firstKeyword.toUpperCase()));
-        if (!requestExists) {
-            return false;
-        }
 
         // Vérification des paramètres
         List<String> exceptFirst = Arrays.stream(entryParts, 1, entryParts.length).collect(Collectors.toList());
@@ -46,86 +51,100 @@ public class Server {
             case "SET":
                 return syntaxCheckSet(exceptFirst);
             default:
+                // Si l'on appele une fonction qui n'existe pas
                 return false;
         }
     }
 
+
+    /**
+     * Fonction permettant de mettre une paire clé/valeur dans la base de données
+     * Options :
+     * EX seconds -- Set the specified expire time, in seconds.
+     * PX milliseconds -- Set the specified expire time, in milliseconds.
+     * NX -- Only set the key if it does not already exist.
+     * XX -- Only set the key if it already exists.
+     * GET -- Return the old string stored at key, or nil if key did not exist. An error is returned and SET aborted if the value stored at key is not a string.
+     *
+     * @param key     clé de la paire
+     * @param value   valeur de la paire
+     * @param options tableau contenant les différentes options - une option + valeur = 2 entrées dans le tableau
+     * @return un String en fonction des options
+     */
     public String set(String key, Object value, String[] options) {
 
         String toReturn = null;
         int expireMillis = -1;
 
-        try {
-            for (int i = 0; i < options.length; i++) {
-                // Options :
-                // EX seconds -- Set the specified expire time, in seconds.
-                // PX milliseconds -- Set the specified expire time, in milliseconds.
-                // NX -- Only set the key if it does not already exist.
-                // XX -- Only set the key if it already exists.
-                // GET -- Return the old string stored at key, or nil if key did not exist. An error is returned and SET aborted if the value stored at key is not a string.
-                String option = options[i].toUpperCase();
-                switch (option) {
-                    case "EX":
-                        expireMillis = 1000 * Integer.valueOf(options[i + 1]);
-                        i++;
-                        break;
+        for (int i = 0; i < options.length; i++) {
+            String option = options[i].toUpperCase();
+            switch (option) {
+                case "EX":
+                    expireMillis = 1000 * Integer.valueOf(options[i + 1]);
+                    i++;
+                    break;
 
-                    case "PX":
-                        expireMillis = Integer.valueOf(options[i + 1]);
-                        i++;
-                        break;
+                case "PX":
+                    expireMillis = Integer.valueOf(options[i + 1]);
+                    i++;
+                    break;
 
-                    case "NX":
-                        if (exists(new String[]{key}) > 0) {
-                            LOG.warning("key already exists");
-                            return toReturn;
+                case "NX":
+                    if (exists(new String[]{key}) > 0) {
+                        return toReturn;
+                    }
+                    break;
+
+                case "XX":
+                    if (!(exists(new String[]{key}) > 0)) {
+                        return toReturn;
+                    }
+                    break;
+
+                case "GET":
+                    if (exists(new String[]{key}) > 0) {
+                        try {
+                            if (database.get(key).getValue() instanceof String) {
+                                toReturn = String.valueOf(database.get(key).getValue());
+                            } else {
+                                throw new Exception("value in key position isn't a String");
+                            }
+                        } catch (Exception e) {
+                            System.err.println("La clé ne stockait pas un String : " + e);
                         }
-                        break;
+                    } else {
+                        toReturn = null;
+                    }
+                    break;
 
-                    case "XX":
-                        if (!(exists(new String[]{key}) > 0)) {
-                            LOG.warning("key does not already exists");
-                            return toReturn;
-                        }
-                        break;
-
-                    case "GET":
-                        if (exists(new String[]{key}) > 0) {
-                            toReturn = String.valueOf(database.get(key).getValue());
-                        } else {
-                            toReturn = null;
-                        }
-                        break;
-
-                    default:
-                        // do nothing
-                        break;
-                }
+                default:
+                    // do nothing
+                    break;
             }
-        } catch (Exception e) {
-            LOG.warning("malformed expression");
-            return toReturn;
         }
 
         ServerObject serverObject = null;
-        if(value instanceof Integer) {
+        if (value instanceof Integer) {
             serverObject = new ServerObject(expireMillis, (int) value);
         } else if (value instanceof String) {
             serverObject = new ServerObject(expireMillis, (String) value);
         } else if (value == null) {
             serverObject = new ServerObject(expireMillis, value);
         } else {
-            System.out.println("Le type de l'objet est inconnu");
+            System.out.println("Le type de l'objet est inconnu et n'a pas été inséré");
+            return null;
         }
         database.put(key, serverObject);
 
         return toReturn;
     }
 
-    /*
-    Cette méthode prend en entrée une Map et un tableau de String, et retourne un int qui est le nombre
-    de clés qu'on a supprimé
-    */
+    /**
+     * Cette méthode supprime plusieurs valeurs stockées dans la base de données
+     *
+     * @param keys tableau contenant les clés à supprimer de la base de données
+     * @return le nombre de valeurs supprimées avec succès
+     */
     public static int del(String[] keys) {
         // nbSuccess est initialisée à 0 et c'est le résultat de la méthode
         int nbSuccess = 0;
@@ -145,9 +164,12 @@ public class Server {
         return nbSuccess;
     }
 
-    /* Cette méthode prend en entrée une Map et un tableau de String, et retourne un int qui est le nombre
-    de clés existantes dans la map donné en entrée
-    */
+    /**
+     * Cette méthode donne le nombre de clés existantes dans la base de donnée parmi une liste de clés
+     *
+     * @param keys tableau de String représentant une liste de clés
+     * @return retourne le nombre de clés existantes dans la base de donnée
+     */
     public static int exists(String[] keys) {
         int nbSuccess = 0;
 
@@ -172,6 +194,12 @@ public class Server {
         return nbSuccess;
     }
 
+    /**
+     * Fonction qui incrémente de 1 une valeur dans la base de donnée si la valeur est du bon type, si l'objet n'existe pas, il le crée dans la base de donnée
+     *
+     * @param key La clé correspondant à la position de l'objet à incrémenter dans la base de donnée
+     * @return retourne la nouvelle valeur de l'objet après l'incrémentation, 0 si l'objet n'est pas du bon type ou si la clé n'existe pas dans la base de donnée
+     */
     public static int incr(String key) {
         int newValue = 0;
         if (exists(new String[]{key}) > 0) {
@@ -193,6 +221,12 @@ public class Server {
         return newValue;
     }
 
+    /**
+     * Fonction qui fait -1 sur la valeur de la clé passée en paramètre
+     *
+     * @param key clé dont on veut décrémenter la valeur
+     * @return la nouvelle valeur (0 si le décrément n'a pas pu être fait)
+     */
     public static int decr(String key) {
         int newValue = 0;
         if (exists(new String[]{key}) > 0) {
@@ -205,7 +239,7 @@ public class Server {
                 }
                 database.get(key).setValue(newValue);
             } catch (Exception e) {
-                System.out.println("On ne peut pas incrementer sur une chaine de caracteres");
+                System.out.println("On ne peut pas incrementer sur une chaine de caractères");
             }
         } else {
             ServerObject serverObject = new ServerObject(-1, newValue);
@@ -214,6 +248,13 @@ public class Server {
         return newValue;
     }
 
+    /**
+     * Fonction permettant d'ajouter une chaîne de caractères à la suite d'une autre
+     *
+     * @param key   clé où l'on veut ajouter une chaine de caractères
+     * @param value chaine de caractères à ajouter à la fin de la précédente valeur
+     * @return la longueur de la nouvelle chaine
+     */
     public static int append(String key, String value) {
         int length = value.length();
         try {
@@ -317,7 +358,12 @@ public class Server {
         return dataLength;
     }
 
-    // Syntax ----------------------------------------------------------------
+    /**
+     * Fonction permettant de vérifier la syntaxe des fonctions incr, decr et get
+     *
+     * @param array tableau représentant ce qui est après l'appel de la fonction
+     * @return si la syntaxe est bonne ou non
+     */
     private static boolean syntaxCheckIncrDecrGet(List<String> array) {
         // Paramètres : String key
         boolean result = false;
@@ -327,6 +373,12 @@ public class Server {
         return result;
     }
 
+    /**
+     * Fonction permettant de vérifier la syntaxe de la fonction append
+     *
+     * @param array tableau représentant ce qui est après l'appel de la fonction
+     * @return si la syntaxe est bonne ou non
+     */
     private static boolean syntaxCheckAppend(List<String> array) {
         // Paramètres : String key, String value
         boolean result = false;
@@ -336,6 +388,12 @@ public class Server {
         return result;
     }
 
+    /**
+     * Fonction permettant de vérifier la syntaxe de la fonction set
+     *
+     * @param array tableau représentant ce qui est après l'appel de la fonction
+     * @return si la syntaxe est bonne ou non
+     */
     private static boolean syntaxCheckSet(List<String> array) {
         // Paramètres : String key, String value, String[] options
         boolean result = false;
@@ -347,12 +405,15 @@ public class Server {
     }
 
     /**
-     * Check si la syntaxe de la requête set est correcte et limite le nombre d'arguments pour éviter les requêtes monstrueuses
-     * @param array Liste des arguments en référence à la fonction set, en évitant multiples arguments du même type ((EX, PX) et (NX, XX))
+     * Check si la syntaxe de la requête set est correcte
+     * Empêche l'insertion de deux fois le même argument pour éviter les requêtes gigantesques
+     * Empêche l'insertion de combinaisons d'arguments rendant la requête inutile (Exemple : doit être inférieure et supérieure à la valeur précédente)
+     *
+     * @param array Liste des arguments en référence à la fonction set
      * @return true si la syntaxe de la requête set est correcte, false sinon
      */
     private static boolean syntaxCheckSetOptions(List<String> array) {
-        Map<String, Boolean> options = new HashMap<String, Boolean>(){{
+        Map<String, Boolean> options = new HashMap<String, Boolean>() {{
             put("EX", false);
             put("PX", false);
             put("NX", false);
@@ -363,7 +424,7 @@ public class Server {
             for (int i = 0; i < array.size(); i++) {
                 switch (array.get(i).toUpperCase()) {
                     case "EX":
-                        if(!options.get("EX") && !options.get("PX")){
+                        if (!options.get("EX") && !options.get("PX")) {
                             options.replace("EX", true);
                         } else {
                             return false;
@@ -378,7 +439,7 @@ public class Server {
                         }
                         break;
                     case "PX":
-                        if(!options.get("EX") && !options.get("PX")){
+                        if (!options.get("EX") && !options.get("PX")) {
                             options.replace("PX", true);
                         } else {
                             return false;
@@ -394,21 +455,21 @@ public class Server {
                         break;
 
                     case "NX":
-                        if(!options.get("NX") && !options.get("XX")){
+                        if (!options.get("NX") && !options.get("XX")) {
                             options.replace("NX", true);
                         } else {
                             return false;
                         }
                         break;
                     case "XX":
-                        if(!options.get("NX") && !options.get("XX")){
+                        if (!options.get("NX") && !options.get("XX")) {
                             options.replace("XX", true);
                         } else {
                             return false;
                         }
                         break;
                     case "GET":
-                        if(!options.get("GET")){
+                        if (!options.get("GET")) {
                             options.replace("GET", true);
                         } else {
                             return false;
@@ -423,8 +484,12 @@ public class Server {
         return true;
     }
 
-    // Sous-fonctions ----------------------------------------------------------------
-
+    /**
+     * Fonction permettant de vérifier la syntaxe des chaines de caractères entrées par l'utilisateur
+     *
+     * @param input la chaine de caractères entrée par l'utilisateur
+     * @return un tableau contenant la fonction découpée
+     */
     public static String[] purgeBlanksNormalizeStrings(String input) {
         List<String> extractedStrings = new ArrayList<>();
 
@@ -467,6 +532,12 @@ public class Server {
         return extractedStrings.toArray(new String[0]);
     }
 
+    /**
+     * Fonction permettant de vérifier la syntaxe de la fonction expire
+     *
+     * @param array ce qui est entré après l'appel de la fonction
+     * @return si la syntaxe est bonne ou pas
+     */
     private static boolean syntaxCheckExpire(List<String> array) {
         // Paramètres : String key, int expireMillis, String[] options
         if (array.size() > 1) {
@@ -484,16 +555,22 @@ public class Server {
     }
 
 
+    /**
+     * Fonction permettant de vérifier la syntaxe de la fonction expire avec des options
+     *
+     * @param array ce qui est entré après l'appel de la fonction
+     * @return si la syntaxe est bonne ou pas
+     */
     private static boolean syntaxCheckExpireOptions(List<String> array) {
-        Map<String, Boolean> options = new HashMap<String, Boolean>(){{
+        Map<String, Boolean> options = new HashMap<String, Boolean>() {{
             put("NX", false);
             put("XX", false);
             put("GT", false);
             put("LT", false);
         }};
 
-        if(array.size() > 0) {
-            for(int i = 0; i < array.size(); i++){
+        if (array.size() > 0) {
+            for (int i = 0; i < array.size(); i++) {
                 switch (array.get(i).toUpperCase()) {
                     case "NX":
                         if (!options.get(array.get(i).toUpperCase()) && !options.get("XX")) {
@@ -532,6 +609,12 @@ public class Server {
         return true;
     }
 
+    /**
+     * Fonction permettant de vérifier la syntaxe de la fonction expire si elle implique un appel à la fonction del
+     *
+     * @param array ce qui est entré après l'appel de la fonction
+     * @return si la syntaxe est bonne ou pas
+     */
     private static boolean syntaxCheckDelExists(List<String> array) {
         // Paramètres : String[] keys
         boolean result = false;

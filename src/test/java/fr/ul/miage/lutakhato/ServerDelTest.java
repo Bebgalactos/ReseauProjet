@@ -6,11 +6,12 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class ServerDelTest {
 
-    @ParameterizedTest(name = "{0} + {1} = {2}")
+    @Test
     @CsvSource({
             "1, 1, 2",
             "2, 2, 4",
@@ -30,9 +31,11 @@ public class ServerDelTest {
         int nbSuccess = Server.del(new String[]{"key1", "key2"});
 
         // Vérifier que les clés ont été supprimées de la Map database
-        assertNull(Server.getDatabase().get("key1"));
-        assertNull(Server.getDatabase().get("key2"));
-        assertNotNull(Server.getDatabase().get("key3"));
+        assertAll(
+                () -> assertNull(Server.getDatabase().get("key1")),
+                () -> assertNull(Server.getDatabase().get("key2")),
+                () -> assertNotNull(Server.getDatabase().get("key3"))
+        );
 
         // Vérifier que le nombre de clés supprimées est correct
         assertEquals(2, nbSuccess);
@@ -49,11 +52,14 @@ public class ServerDelTest {
         // Appeler la méthode del avec des clés inexistantes
         int nbSuccess = Server.del(new String[]{"key2", "key3"});
 
-        // Vérifier que les clés inexistantes n'ont pas été supprimées de la Map database
-        assertNotNull(Server.getDatabase().get("key1"));
 
-        // Vérifier que le nombre de clés supprimées est correct
-        assertEquals(0, nbSuccess);
+        assertAll(
+                // Vérifier que les clés inexistantes n'ont pas été supprimées de la Map database
+                () -> assertNotNull(Server.getDatabase().get("key1")),
+
+                // Vérifier que le nombre de clés supprimées est correct
+                () -> assertEquals(0, nbSuccess)
+        );
     }
 
     @Test
@@ -67,11 +73,13 @@ public class ServerDelTest {
         // Appeler la méthode del avec une clé existante et une clé inexistante
         int nbSuccess = Server.del(new String[]{"key1", "key2"});
 
-        // Vérifier que la clé existante a été supprimée de la Map database
-        assertNull(Server.getDatabase().get("key1"));
+        assertAll(
+                // Vérifier que la clé existante a été supprimée de la Map database
+                () -> assertNull(Server.getDatabase().get("key1")),
 
-        // Vérifier que le nombre de clés supprimées est correct
-        assertEquals(1, nbSuccess);
+                // Vérifier que le nombre de clés supprimées est correct
+                () -> assertEquals(1, nbSuccess)
+        );
     }
 
 
@@ -86,10 +94,12 @@ public class ServerDelTest {
         // Appeler la méthode del avec une clé existante et une clé inexistante
         int nbSuccess = Server.del(new String[]{"key1", "key2"});
 
-        // Vérifier que la clé existante a été supprimée de la Map database
-        assertNull(Server.getDatabase().get("key1"));
+        assertAll(
+                // Vérifier que la clé existante a été supprimée de la Map database
+                () -> assertNull(Server.getDatabase().get("key1")),
 
-        // Vérifier que le nombre de clés supprimées est correct
-        assertEquals(1, nbSuccess);
+                // Vérifier que le nombre de clés supprimées est correct
+                () -> assertEquals(1, nbSuccess)
+        );
     }
 }

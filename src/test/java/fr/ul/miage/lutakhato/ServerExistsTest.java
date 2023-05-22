@@ -2,16 +2,11 @@ package fr.ul.miage.lutakhato;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
 
 import org.junit.jupiter.api.Test;
 
-import java.util.HashMap;
-import java.util.Map;
 
-
-public class ServerExistTest {
+public class ServerExistsTest {
 
     private Server server;
 

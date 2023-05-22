@@ -51,4 +51,21 @@ public class ServerSetTest {
                 () -> assertEquals(server.getDatabase().get(key).getValue(), value)
         );
     }
+
+    @Test
+    public void testSetOverwrite(){
+        // Instance du serveur
+        Server server = new Server();
+
+        // Variables
+        String[] options = new String[]{};
+        String key = "key";
+        String value1 = "value1";
+        String value2 = "value2";
+
+        // Tests
+        server.set(key, value1, options);
+        server.set(key, value2, options);
+        assertEquals(server.getDatabase().get(key).getValue(), value2);
+    }
 }

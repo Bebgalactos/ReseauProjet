@@ -1,5 +1,6 @@
 package fr.ul.miage.lutakhato;
 
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
@@ -127,6 +128,12 @@ public class ServerSyntaxCheckTest {
     })
     public void testBadSyntaxExpire(String entry){
         assertFalse(syntaxCheck(entry));
+    }
+
+    @Test
+    public void testBadSyntaxEmptyArgument(){
+        String empty = "";
+        assertFalse(syntaxCheck(empty));
     }
 
 }
