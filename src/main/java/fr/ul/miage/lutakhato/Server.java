@@ -6,7 +6,6 @@ import java.util.stream.Collectors;
 
 public class Server {
 
-
     private static final Logger LOG = Logger.getLogger(Server.class.getName());
     private static Map<String, ServerObject> database = new HashMap<String, ServerObject>();
     public static String[] keyWords = new String[]{"APPEND", "DECR", "DEL", "EXISTS", "EXPIRE", "GET", "INCR", "SET"};
