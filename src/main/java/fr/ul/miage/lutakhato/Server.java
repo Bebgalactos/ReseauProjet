@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 
 public class Server {
 
+<<<<<<< HEAD
     private Map<String, ServerObject> database = new HashMap<>();
 
     public void main(String[] args) {
@@ -19,6 +20,14 @@ public class Server {
             toReturn = "Entry error";
         }
         System.out.println(toReturn);
+=======
+    private static final Logger LOG = Logger.getLogger(Server.class.getName());
+    private static Map<String, ServerObject> database = new HashMap<String, ServerObject>();
+    public static String[] keyWords = new String[]{"APPEND", "DECR", "DEL", "EXISTS", "EXPIRE", "GET", "INCR", "SET"};
+
+    public static void main(String[] args) {
+
+>>>>>>> 218bc2c1e99c912eabca8ff574990cc426f9b4d1
     }
 
     /**
