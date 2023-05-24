@@ -1,18 +1,24 @@
 package fr.ul.miage.lutakhato;
 
 import java.util.*;
-import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class Server {
 
+    private Map<String, ServerObject> database = new HashMap<>();
 
-    private static final Logger LOG = Logger.getLogger(Server.class.getName());
-    private static Map<String, ServerObject> database = new HashMap<String, ServerObject>();
-    public static String[] keyWords = new String[]{"APPEND", "DECR", "DEL", "EXISTS", "EXPIRE", "GET", "INCR", "SET"};
-
-    public static void main(String[] args) {
-
+    public void main(String[] args) {
+        String received = "SET 0 0";
+        String toReturn = "";
+        if (syntaxCheck(received)) {
+            toReturn = callFunction(received);
+        } else {
+            // Retourne au client : (sysout ne revient pas au même/ à refaire)
+            toReturn = "Entry error";
+        }
+        System.out.println(toReturn);
     }
 
     /**
@@ -21,28 +27,22 @@ public class Server {
      * @param entry entrée dont on veut vérifier la syntaxe
      * @return true si la syntaxe est bonne, false sinon
      */
-    public static boolean syntaxCheck(String entry) {
+    public boolean syntaxCheck(String entry) {
         // Récupération des mots clés entrés
         String[] entryParts = purgeBlanksNormalizeStrings(entry);
 
-        // Vérification de l'existence de la requête
-        if (entryParts.length == 0 || !Arrays.stream(keyWords)
-                .anyMatch(keyword -> keyword.equalsIgnoreCase(entryParts[0]))) {
-            return false;
-        }
-
-        // Récupération du premier argument correspondant à la fonction appelée
-        String firstKeyword = entryParts[0];
-
         // Vérification des paramètres
         List<String> exceptFirst = Arrays.stream(entryParts, 1, entryParts.length).collect(Collectors.toList());
-        switch (firstKeyword.toUpperCase()) {
+
+        // Le premier argument correspond à la fonction appelée
+        switch (entryParts[0]) {
             case "APPEND":
                 return syntaxCheckAppend(exceptFirst);
+            case "STRLEN":
             case "INCR":
             case "DECR":
             case "GET":
-                return syntaxCheckIncrDecrGet(exceptFirst);
+                return syntaxCheckIncrDecrGetStrlen(exceptFirst);
             case "DEL":
             case "EXISTS":
                 return syntaxCheckDelExists(exceptFirst);
@@ -54,6 +54,63 @@ public class Server {
                 // Si l'on appele une fonction qui n'existe pas
                 return false;
         }
+    }
+
+    /**
+     * Appel la bonne fonction en fonction de la syntaxe
+     * @param entry Entrée de l'utilisateur
+     * @return Retour de la fonction
+     */
+    public String callFunction(String entry) {
+        String toReturn = "";
+        String[] entryParts = purgeBlanksNormalizeStrings(entry);
+        List<String> exceptFirst = Arrays.stream(entryParts, 1, entryParts.length).collect(Collectors.toList());
+        switch (entryParts[0].toUpperCase()) {
+            case "APPEND":
+                toReturn = String.valueOf(append(exceptFirst.get(0), exceptFirst.get(1)));
+                break;
+            case "STRLEN":
+                toReturn = String.valueOf(strlen(exceptFirst.get(0)));
+                break;
+            case "INCR":
+                toReturn = String.valueOf(incr(exceptFirst.get(0)));
+                break;
+            case "DECR":
+                toReturn = String.valueOf(decr(exceptFirst.get(0)));
+                break;
+            case "GET":
+                toReturn = String.valueOf(get(exceptFirst.get(0)));
+                break;
+            case "DEL":
+                toReturn = String.valueOf(del(exceptFirst.toArray(new String[0])));
+                break;
+            case "EXISTS":
+                toReturn = String.valueOf(exists(exceptFirst.toArray(new String[0])));
+                break;
+            case "EXPIRE":
+                toReturn = String.valueOf(expire(exceptFirst.get(0),Integer.parseInt(exceptFirst.get(1)),exceptFirst.subList(2, exceptFirst.size()).toArray(new String[0])));
+                break;
+            case "SET":
+                Object value;
+                if (containsOnlyDigits(exceptFirst.get(1))) {
+                    value = Integer.parseInt(exceptFirst.get(1));
+                } else {
+                    value = exceptFirst.get(1);
+                }
+                if(exceptFirst.size() > 1) {
+                    toReturn = String.valueOf(set(exceptFirst.get(0), value, exceptFirst.subList(2, exceptFirst.size()).toArray(new String[0])));
+                } else {
+                    toReturn = String.valueOf(set(exceptFirst.get(0), value, new String[0]));
+                }
+                break;
+        }
+        return toReturn;
+    }
+
+    public boolean containsOnlyDigits(String str) {
+        Pattern pattern = Pattern.compile("^[0-9]+$");
+        Matcher matcher = pattern.matcher(str);
+        return matcher.matches();
     }
 
 
@@ -80,12 +137,12 @@ public class Server {
             String option = options[i].toUpperCase();
             switch (option) {
                 case "EX":
-                    expireMillis = 1000 * Integer.valueOf(options[i + 1]);
+                    expireMillis = 1000 * Integer.parseInt(options[i + 1]);
                     i++;
                     break;
 
                 case "PX":
-                    expireMillis = Integer.valueOf(options[i + 1]);
+                    expireMillis = Integer.parseInt(options[i + 1]);
                     i++;
                     break;
 
@@ -110,7 +167,7 @@ public class Server {
                                 throw new Exception("value in key position isn't a String");
                             }
                         } catch (Exception e) {
-                            System.err.println("La clé ne stockait pas un String : " + e);
+                            return ("Erreur: value is not the right type");
                         }
                     } else {
                         toReturn = null;
@@ -129,7 +186,7 @@ public class Server {
         } else if (value instanceof String) {
             serverObject = new ServerObject(expireMillis, (String) value);
         } else if (value == null) {
-            serverObject = new ServerObject(expireMillis, value);
+            serverObject = new ServerObject(expireMillis, null);
         } else {
             System.out.println("Le type de l'objet est inconnu et n'a pas été inséré");
             return null;
@@ -145,7 +202,7 @@ public class Server {
      * @param keys tableau contenant les clés à supprimer de la base de données
      * @return le nombre de valeurs supprimées avec succès
      */
-    public static int del(String[] keys) {
+    public int del(String[] keys) {
         // nbSuccess est initialisée à 0 et c'est le résultat de la méthode
         int nbSuccess = 0;
 
@@ -170,7 +227,7 @@ public class Server {
      * @param keys tableau de String représentant une liste de clés
      * @return retourne le nombre de clés existantes dans la base de donnée
      */
-    public static int exists(String[] keys) {
+    public int exists(String[] keys) {
         int nbSuccess = 0;
 
         for (String key : keys) {
@@ -200,15 +257,15 @@ public class Server {
      * @param key La clé correspondant à la position de l'objet à incrémenter dans la base de donnée
      * @return retourne la nouvelle valeur de l'objet après l'incrémentation, 0 si l'objet n'est pas du bon type ou si la clé n'existe pas dans la base de donnée
      */
-    public static int incr(String key) {
+    public int incr(String key) {
         int newValue = 0;
         if (exists(new String[]{key}) > 0) {
             try {
-                int oldValue = Integer.valueOf(database.get(key).getValue().toString());
-                if (Integer.MAX_VALUE >= oldValue + 1) {
-                    newValue = oldValue + 1;
-                } else {
+                int oldValue = Integer.parseInt(database.get(key).getValue().toString());
+                if (Integer.MAX_VALUE == oldValue) {
                     newValue = Integer.MAX_VALUE;
+                } else {
+                    newValue = oldValue + 1;
                 }
                 database.get(key).setValue(newValue);
             } catch (Exception e) {
@@ -227,15 +284,15 @@ public class Server {
      * @param key clé dont on veut décrémenter la valeur
      * @return la nouvelle valeur (0 si le décrément n'a pas pu être fait)
      */
-    public static int decr(String key) {
+    public int decr(String key) {
         int newValue = 0;
         if (exists(new String[]{key}) > 0) {
             try {
-                int oldValue = Integer.valueOf(database.get(key).getValue().toString());
-                if (Integer.MIN_VALUE <= oldValue - 1) {
-                    newValue = oldValue - 1;
-                } else {
+                int oldValue = Integer.parseInt(database.get(key).getValue().toString());
+                if (Integer.MIN_VALUE == oldValue) {
                     newValue = Integer.MIN_VALUE;
+                } else {
+                    newValue = oldValue - 1;
                 }
                 database.get(key).setValue(newValue);
             } catch (Exception e) {
@@ -255,7 +312,7 @@ public class Server {
      * @param value chaine de caractères à ajouter à la fin de la précédente valeur
      * @return la longueur de la nouvelle chaine
      */
-    public static int append(String key, String value) {
+    public int append(String key, String value) {
         int length = value.length();
         try {
             if (exists(new String[]{key}) > 0) {
@@ -302,8 +359,8 @@ public class Server {
     public int expire(String key, int seconds, String[] options) {
         if (exists(new String[]{key}) > 0) {
             int expireMillis = seconds * 1000;
-            for (int i = 0; i < options.length; i++) {
-                switch (options[i].toUpperCase()) {
+            for (String option : options) {
+                switch (option.toUpperCase()) {
                     case "NX":
                         if (!(database.get(key).getExpireMillis() == -1)) {
                             return 0;
@@ -340,7 +397,7 @@ public class Server {
      * @param key la clé du String dans la base
      * @return la taille du String ou le nombre de chiffres de l'Integer, retourne une -1 et affiche une erreur si l'objet n'est pas d'un type géré
      */
-    public static int strlen(String key) {
+    public int strlen(String key) {
         int dataLength = -1;
         try {
             if (!database.containsKey(key)) {
@@ -364,13 +421,9 @@ public class Server {
      * @param array tableau représentant ce qui est après l'appel de la fonction
      * @return si la syntaxe est bonne ou non
      */
-    private static boolean syntaxCheckIncrDecrGet(List<String> array) {
+    private boolean syntaxCheckIncrDecrGetStrlen(List<String> array) {
         // Paramètres : String key
-        boolean result = false;
-        if (array.size() == 1) {
-            result = true;
-        }
-        return result;
+        return array.size() == 1;
     }
 
     /**
@@ -379,13 +432,9 @@ public class Server {
      * @param array tableau représentant ce qui est après l'appel de la fonction
      * @return si la syntaxe est bonne ou non
      */
-    private static boolean syntaxCheckAppend(List<String> array) {
+    private boolean syntaxCheckAppend(List<String> array) {
         // Paramètres : String key, String value
-        boolean result = false;
-        if (array.size() == 2) {
-            result = true;
-        }
-        return result;
+        return array.size() == 2;
     }
 
     /**
@@ -394,11 +443,9 @@ public class Server {
      * @param array tableau représentant ce qui est après l'appel de la fonction
      * @return si la syntaxe est bonne ou non
      */
-    private static boolean syntaxCheckSet(List<String> array) {
+    private boolean syntaxCheckSet(List<String> array) {
         // Paramètres : String key, String value, String[] options
-        boolean result = false;
         if (array.size() > 1) {
-            result = true;
             return syntaxCheckSetOptions(array.subList(2, array.size()));
         }
         return false;
@@ -412,7 +459,7 @@ public class Server {
      * @param array Liste des arguments en référence à la fonction set
      * @return true si la syntaxe de la requête set est correcte, false sinon
      */
-    private static boolean syntaxCheckSetOptions(List<String> array) {
+    private boolean syntaxCheckSetOptions(List<String> array) {
         Map<String, Boolean> options = new HashMap<String, Boolean>() {{
             put("EX", false);
             put("PX", false);
@@ -431,7 +478,7 @@ public class Server {
                         }
                         if (array.size() - 1 > i) {
                             try {
-                                int expireTime = Integer.valueOf(array.get(i + 1));
+                                Integer.parseInt(array.get(i + 1));
                             } catch (Exception e) {
                                 return false;
                             }
@@ -446,7 +493,7 @@ public class Server {
                         }
                         if (array.size() - 1 > i) {
                             try {
-                                int expireTime = Integer.valueOf(array.get(i + 1));
+                                Integer.parseInt(array.get(i + 1));
                             } catch (Exception e) {
                                 return false;
                             }
@@ -490,7 +537,7 @@ public class Server {
      * @param input la chaine de caractères entrée par l'utilisateur
      * @return un tableau contenant la fonction découpée
      */
-    public static String[] purgeBlanksNormalizeStrings(String input) {
+    public String[] purgeBlanksNormalizeStrings(String input) {
         List<String> extractedStrings = new ArrayList<>();
 
         StringBuilder currentString = new StringBuilder();
@@ -538,11 +585,11 @@ public class Server {
      * @param array ce qui est entré après l'appel de la fonction
      * @return si la syntaxe est bonne ou pas
      */
-    private static boolean syntaxCheckExpire(List<String> array) {
+    private boolean syntaxCheckExpire(List<String> array) {
         // Paramètres : String key, int expireMillis, String[] options
         if (array.size() > 1) {
             try {
-                int isInt = Integer.valueOf(array.get(1));
+                int isInt = Integer.parseInt(array.get(1));
                 if (isInt <= 0) {
                     return false;
                 }
@@ -561,7 +608,7 @@ public class Server {
      * @param array ce qui est entré après l'appel de la fonction
      * @return si la syntaxe est bonne ou pas
      */
-    private static boolean syntaxCheckExpireOptions(List<String> array) {
+    private boolean syntaxCheckExpireOptions(List<String> array) {
         Map<String, Boolean> options = new HashMap<String, Boolean>() {{
             put("NX", false);
             put("XX", false);
@@ -570,32 +617,32 @@ public class Server {
         }};
 
         if (array.size() > 0) {
-            for (int i = 0; i < array.size(); i++) {
-                switch (array.get(i).toUpperCase()) {
+            for (String s : array) {
+                switch (s.toUpperCase()) {
                     case "NX":
-                        if (!options.get(array.get(i).toUpperCase()) && !options.get("XX")) {
-                            options.replace(array.get(i).toUpperCase(), true);
+                        if (!options.get(s.toUpperCase()) && !options.get("XX")) {
+                            options.replace(s.toUpperCase(), true);
                         } else {
                             return false;
                         }
                         break;
                     case "XX":
-                        if (!options.get(array.get(i).toUpperCase()) && !options.get("NX")) {
-                            options.replace(array.get(i).toUpperCase(), true);
+                        if (!options.get(s.toUpperCase()) && !options.get("NX")) {
+                            options.replace(s.toUpperCase(), true);
                         } else {
                             return false;
                         }
                         break;
                     case "GT":
-                        if (!options.get(array.get(i).toUpperCase()) && !options.get("LT")) {
-                            options.replace(array.get(i).toUpperCase(), true);
+                        if (!options.get(s.toUpperCase()) && !options.get("LT")) {
+                            options.replace(s.toUpperCase(), true);
                         } else {
                             return false;
                         }
                         break;
                     case "LT":
-                        if (!options.get(array.get(i).toUpperCase()) && !options.get("GT")) {
-                            options.replace(array.get(i).toUpperCase(), true);
+                        if (!options.get(s.toUpperCase()) && !options.get("GT")) {
+                            options.replace(s.toUpperCase(), true);
                         } else {
                             return false;
                         }
@@ -615,17 +662,13 @@ public class Server {
      * @param array ce qui est entré après l'appel de la fonction
      * @return si la syntaxe est bonne ou pas
      */
-    private static boolean syntaxCheckDelExists(List<String> array) {
+    private boolean syntaxCheckDelExists(List<String> array) {
         // Paramètres : String[] keys
-        boolean result = false;
-        if (array.size() > 0) {
-            result = true;
-        }
-        return result;
+        return array.size() > 0;
     }
 
     // Getters et Setters ----------------------------------------------------------------
-    public static Map<String, ServerObject> getDatabase() {
+    public Map<String, ServerObject> getDatabase() {
         return database;
     }
 

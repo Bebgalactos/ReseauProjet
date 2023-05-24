@@ -4,7 +4,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
-import static fr.ul.miage.lutakhato.Server.syntaxCheck;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class ServerSyntaxCheckTest {
@@ -45,7 +44,7 @@ public class ServerSyntaxCheckTest {
 
     })
     public void testGoodSyntaxSet(String entry){
-        assertTrue(syntaxCheck(entry));
+        assertTrue((new Server()).syntaxCheck(entry));
     }
 
     @ParameterizedTest(name = "{0}")
@@ -60,7 +59,7 @@ public class ServerSyntaxCheckTest {
             "SET ki002 -1000 XX XX",
     })
     public void testBadSyntaxSet(String entry){
-        assertFalse(syntaxCheck(entry));
+        assertFalse((new Server()).syntaxCheck(entry));
     }
 
     @ParameterizedTest(name = "{0}")
@@ -81,7 +80,7 @@ public class ServerSyntaxCheckTest {
             "DEL ksjhfbisevbofesief 0",
     })
     public void testGoodSyntax(String entry){
-        assertTrue(syntaxCheck(entry));
+        assertTrue((new Server()).syntaxCheck(entry));
     }
 
 
@@ -98,7 +97,7 @@ public class ServerSyntaxCheckTest {
             "APPEND", "DECR", "DEL", "EXISTS", "EXPIRE", "GET", "INCR", "SET"
     })
     public void testBadSyntax(String entry){
-        assertFalse(syntaxCheck(entry));
+        assertFalse((new Server()).syntaxCheck(entry));
     }
 
     @ParameterizedTest(name = "{0}")
@@ -112,7 +111,7 @@ public class ServerSyntaxCheckTest {
             "expire k1001 10 gt",
     })
     public void testGoodSyntaxExpire(String entry){
-        assertTrue(syntaxCheck(entry));
+        assertTrue((new Server()).syntaxCheck(entry));
     }
 
     @ParameterizedTest(name = "{0}")
@@ -127,13 +126,13 @@ public class ServerSyntaxCheckTest {
             "expire ki002 1000 er",
     })
     public void testBadSyntaxExpire(String entry){
-        assertFalse(syntaxCheck(entry));
+        assertFalse((new Server()).syntaxCheck(entry));
     }
 
     @Test
     public void testBadSyntaxEmptyArgument(){
         String empty = "";
-        assertFalse(syntaxCheck(empty));
+        assertFalse((new Server()).syntaxCheck(empty));
     }
 
 }
