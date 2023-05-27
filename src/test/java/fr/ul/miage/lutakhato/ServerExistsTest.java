@@ -2,22 +2,17 @@ package fr.ul.miage.lutakhato;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
 
 import org.junit.jupiter.api.Test;
 
-import java.util.HashMap;
-import java.util.Map;
 
+public class ServerExistsTest {
 
-public class ServerExistTest {
-
-    private Server server;
+    private ServerThread server;
 
     @BeforeEach
     public void setUp() {
-        server = new Server();
+        server = new ServerThread(client);
         server.getDatabase().put("key1", new ServerObject(0, "valeur1"));
         server.getDatabase().put("key2", new ServerObject(0, "valeur2"));
         server.getDatabase().put("key3", new ServerObject(0, "valeur3"));

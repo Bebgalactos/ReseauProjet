@@ -18,13 +18,10 @@ public class ServerSetTest {
     })
     public void testSetString(String key, String value){
         // Instance du serveur
-        Server server = new Server();
-
-        // Variables
-        String[] options = new String[]{};
+        ServerThread server = new ServerThread(client);
 
         //Tests
-        server.set(key, value, options);
+        server.set(key, value, new String[0]);
         assertAll(
                 () -> assertTrue(server.getDatabase().containsKey(key)),
                 () -> assertEquals(server.getDatabase().get(key).getValue(), value)
@@ -39,7 +36,7 @@ public class ServerSetTest {
     })
     public void testSetInteger(String key, Integer value){
         // Instance du serveur
-        Server server = new Server();
+        ServerThread server = new ServerThread(client);
 
         // Variables
         String[] options = new String[]{};
@@ -50,5 +47,22 @@ public class ServerSetTest {
                 () -> assertTrue(server.getDatabase().containsKey(key)),
                 () -> assertEquals(server.getDatabase().get(key).getValue(), value)
         );
+    }
+
+    @Test
+    public void testSetOverwrite(){
+        // Instance du serveur
+        ServerThread server = new ServerThread(client);
+
+        // Variables
+        String[] options = new String[]{};
+        String key = "key";
+        String value1 = "value1";
+        String value2 = "value2";
+
+        // Tests
+        server.set(key, value1, options);
+        server.set(key, value2, options);
+        assertEquals(server.getDatabase().get(key).getValue(), value2);
     }
 }
