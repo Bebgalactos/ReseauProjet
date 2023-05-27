@@ -20,14 +20,6 @@ public class Server {
             toReturn = "Entry error";
         }
         System.out.println(toReturn);
-=======
-    private static final Logger LOG = Logger.getLogger(Server.class.getName());
-    private static Map<String, ServerObject> database = new HashMap<String, ServerObject>();
-    public static String[] keyWords = new String[]{"APPEND", "DECR", "DEL", "EXISTS", "EXPIRE", "GET", "INCR", "SET"};
-
-    public static void main(String[] args) {
-
->>>>>>> 218bc2c1e99c912eabca8ff574990cc426f9b4d1
     }
 
     /**
@@ -67,6 +59,7 @@ public class Server {
 
     /**
      * Appel la bonne fonction en fonction de la syntaxe
+     *
      * @param entry Entrée de l'utilisateur
      * @return Retour de la fonction
      */
@@ -97,7 +90,7 @@ public class Server {
                 toReturn = String.valueOf(exists(exceptFirst.toArray(new String[0])));
                 break;
             case "EXPIRE":
-                toReturn = String.valueOf(expire(exceptFirst.get(0),Integer.parseInt(exceptFirst.get(1)),exceptFirst.subList(2, exceptFirst.size()).toArray(new String[0])));
+                toReturn = String.valueOf(expire(exceptFirst.get(0), Integer.parseInt(exceptFirst.get(1)), exceptFirst.subList(2, exceptFirst.size()).toArray(new String[0])));
                 break;
             case "SET":
                 Object value;
@@ -106,11 +99,8 @@ public class Server {
                 } else {
                     value = exceptFirst.get(1);
                 }
-                if(exceptFirst.size() > 1) {
-                    toReturn = String.valueOf(set(exceptFirst.get(0), value, exceptFirst.subList(2, exceptFirst.size()).toArray(new String[0])));
-                } else {
-                    toReturn = String.valueOf(set(exceptFirst.get(0), value, new String[0]));
-                }
+                toReturn = String.valueOf(set(exceptFirst.get(0), value, exceptFirst.subList(2, exceptFirst.size()).toArray(new String[0])));
+
                 break;
         }
         return toReturn;
@@ -328,10 +318,10 @@ public class Server {
                 String oldValue = String.valueOf(database.get(key).getValue());
                 String newValue = oldValue + value;
                 database.get(key).setValue(newValue);
+                length = strlen(key);
             } else {
-                length = 0;
-                ServerObject serverObject = new ServerObject(-1, "");
-                database.put(key, serverObject);
+                ServerObject serverObject = new ServerObject(-1, value);
+                set(key, serverObject, new String[0]);
             }
         } catch (Exception e) {
             System.out.println("On ne peut pas append sur un nombre entier");

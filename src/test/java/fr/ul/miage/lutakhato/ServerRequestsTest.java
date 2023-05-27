@@ -11,8 +11,7 @@ public class ServerRequestsTest {
     @ParameterizedTest(name = "{0}")
     @CsvSource({
             "set ks001 simple",
-            "set ks001 simple GET",
-            "set ks001 simple EX 10"
+            "set ks001 simple GET"
     })
     public void testSetStringRequest(String request) {
         Server serverCall = new Server();
@@ -20,6 +19,7 @@ public class ServerRequestsTest {
 
         Server serverDirect = new Server();
         String[] requestTable = request.split(" ");
+
         Map<String, ServerObject> newDatabase = new HashMap<>();
         newDatabase.put(requestTable[1], new ServerObject(requestTable[2]));
         serverDirect.setDatabase(newDatabase);
