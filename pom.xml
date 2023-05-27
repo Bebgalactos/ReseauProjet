@@ -49,7 +49,7 @@
                 <artifactId>javafx-maven-plugin</artifactId>
                 <version>0.0.4</version>
                 <configuration>
-                    <release>15</release>
+                    <release>17</release>
                 </configuration>
             </plugin>
             <plugin>
@@ -57,9 +57,7 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.10.1</version>
                 <configuration>
-                    <release>11</release>
-                    <source>14</source>
-                    <target>14</target>
+                    <release>17</release>
                 </configuration>
             </plugin>
             <plugin>

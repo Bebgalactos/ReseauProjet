@@ -1,3 +1,5 @@
+package fr.ul.miage.lutakhato;
+
 import java.util.HashMap;
 import java.util.Map;
 

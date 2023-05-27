@@ -10,7 +10,7 @@ public class ServerAppendTest {
     @Test
     public void testAppend_ExistingKey() {
         // Instance du server
-        Server server = new Server();
+        ServerThread server = new ServerThread(client);
 
         // Ajouter une clé existante dans la Map database
         server.set("key1", "value1", new String[0]);
@@ -28,7 +28,7 @@ public class ServerAppendTest {
     @Test
     public void testAppend_NewKey() {
         // Instance du server
-        Server server = new Server();
+        ServerThread server = new ServerThread(client);
 
         server.set("key1", "", new String[0]);
 

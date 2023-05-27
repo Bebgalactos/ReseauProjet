@@ -10,7 +10,7 @@ public class ServerIncrTest {
     @Test
     public void testIncr() {
         // Instance du server
-        Server server = new Server();
+        ServerThread server = new ServerThread(client);
 
         // Ajouter une clé à incrémenter dans la Map database
         server.set("key1", 0, new String[0]);

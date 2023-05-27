@@ -9,7 +9,7 @@ public class ServerExpireTest {
     @Test
     public void testExpire(){
         // Instance du serveur
-        Server test = new Server();
+        ServerThread test = new ServerThread(client);
 
         // Tests - valeurs de base
         test.set("init", 115, new String[]{});

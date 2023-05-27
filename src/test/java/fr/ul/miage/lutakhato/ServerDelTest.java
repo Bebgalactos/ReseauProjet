@@ -1,6 +1,5 @@
 package fr.ul.miage.lutakhato;
 
-import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.api.Test;
 
@@ -20,7 +19,7 @@ public class ServerDelTest {
     })
     public void testDelAvecClesExistantes() {
         // Réinitialiser la Map database avant chaque test
-        Server server = new Server();
+        ServerThread server = new ServerThread(client);
 
         // Ajouter les clés à supprimer dans la Map database
         server.getDatabase().put("key1", new ServerObject(0, "valeur1"));
@@ -44,7 +43,7 @@ public class ServerDelTest {
     @Test
     public void testDelAvecClesInexistantes() {
         // Réinitialiser la Map database avant chaque test
-        Server server = new Server();
+        ServerThread server = new ServerThread(client);
 
         // Ajouter une clé existante dans la Map database
         server.getDatabase().put("key1", new ServerObject(0, "valeur1"));
@@ -64,7 +63,7 @@ public class ServerDelTest {
     @Test
     public void testDelAvecCleExistanteEtCleInexistante() {
         // Réinitialiser la Map database avant chaque test
-        Server server = new Server();
+        ServerThread server = new ServerThread(client);
 
         // Ajouter une clé existante dans la Map database
         server.getDatabase().put("key1", new ServerObject(0, "valeur1"));
@@ -83,7 +82,7 @@ public class ServerDelTest {
     @Test
     public void testDelExpire() {
         // Réinitialiser la Map database avant chaque test
-        Server server = new Server();
+        ServerThread server = new ServerThread(client);
 
         // Ajouter une clé existante dans la Map database
         server.getDatabase().put("key1", new ServerObject(0, "valeur1"));

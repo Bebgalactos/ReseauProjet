@@ -8,11 +8,11 @@ import org.junit.jupiter.api.Test;
 
 public class ServerExistsTest {
 
-    private Server server;
+    private ServerThread server;
 
     @BeforeEach
     public void setUp() {
-        server = new Server();
+        server = new ServerThread(client);
         server.getDatabase().put("key1", new ServerObject(0, "valeur1"));
         server.getDatabase().put("key2", new ServerObject(0, "valeur2"));
         server.getDatabase().put("key3", new ServerObject(0, "valeur3"));

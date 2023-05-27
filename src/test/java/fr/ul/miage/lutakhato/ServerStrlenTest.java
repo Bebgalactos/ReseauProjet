@@ -2,7 +2,6 @@ package fr.ul.miage.lutakhato;
 
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
-import fr.ul.miage.lutakhato.Server;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -18,7 +17,7 @@ public class ServerStrlenTest {
             "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()-=_+[]{}|;':,.<>/?`~éàèêëïîôöüùûçÄÖÜßáíóúñ¿¡æøåÅÆØÑ"
     })
     public void testStrlen(String entry){
-        Server server = new Server();
+        ServerThread server = new ServerThread(client);
         String entryKey = entry + "key";
 
         server.set(entryKey, entry, new String[]{});

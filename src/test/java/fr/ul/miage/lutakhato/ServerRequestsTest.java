@@ -14,10 +14,10 @@ public class ServerRequestsTest {
             "set ks001 simple GET"
     })
     public void testSetStringRequest(String request) {
-        Server serverCall = new Server();
+        ServerThread serverCall = new ServerThread(client);
         serverCall.callFunction(request);
 
-        Server serverDirect = new Server();
+        ServerThread serverDirect = new ServerThread(client);
         String[] requestTable = request.split(" ");
 
         Map<String, ServerObject> newDatabase = new HashMap<>();
@@ -40,10 +40,10 @@ public class ServerRequestsTest {
             "set ks001 10000l EX 100 GET"
     })
     public void testSetStringRequestWithCreationTime(String request) {
-        Server serverCall = new Server();
+        ServerThread serverCall = new ServerThread(client);
         serverCall.callFunction(request);
 
-        Server serverDirect = new Server();
+        ServerThread serverDirect = new ServerThread(client);
         String[] requestTable = request.split(" ");
 
         Map<String, ServerObject> newDatabase = new HashMap<>();

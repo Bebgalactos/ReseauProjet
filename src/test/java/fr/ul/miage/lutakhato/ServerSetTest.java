@@ -18,7 +18,7 @@ public class ServerSetTest {
     })
     public void testSetString(String key, String value){
         // Instance du serveur
-        Server server = new Server();
+        ServerThread server = new ServerThread(client);
 
         //Tests
         server.set(key, value, new String[0]);
@@ -36,7 +36,7 @@ public class ServerSetTest {
     })
     public void testSetInteger(String key, Integer value){
         // Instance du serveur
-        Server server = new Server();
+        ServerThread server = new ServerThread(client);
 
         // Variables
         String[] options = new String[]{};
@@ -52,7 +52,7 @@ public class ServerSetTest {
     @Test
     public void testSetOverwrite(){
         // Instance du serveur
-        Server server = new Server();
+        ServerThread server = new ServerThread(client);
 
         // Variables
         String[] options = new String[]{};

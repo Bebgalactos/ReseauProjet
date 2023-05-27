@@ -8,7 +8,7 @@ public class ServerGetTest {
     @Test
     public void testGet(){
         // Instance du serveur
-        Server test = new Server();
+        ServerThread test = new ServerThread(client);
 
         // Tests
         test.set("initial value - int", 115, new String[0]);
