@@ -33,4 +33,30 @@ public class ServerRequestsTest {
                         serverDirect.getDatabase().get(requestTable[1]).getExpireMillis())
         );
     }
+
+    @ParameterizedTest(name = "{0}")
+    @CsvSource({
+            "set ks001 simple EX 10",
+            "set ks001 10000l EX 100 GET"
+    })
+    public void testSetStringRequestWithCreationTime(String request) {
+        Server serverCall = new Server();
+        serverCall.callFunction(request);
+
+        Server serverDirect = new Server();
+        String[] requestTable = request.split(" ");
+
+        Map<String, ServerObject> newDatabase = new HashMap<>();
+        newDatabase.put(requestTable[1], new ServerObject(Integer.parseInt(requestTable[4]) * 1000, requestTable[2]));
+        serverDirect.setDatabase(newDatabase);
+
+        assertAll(
+                () -> assertEquals(
+                        serverCall.getDatabase().get(requestTable[1]).getValue(),
+                        serverDirect.getDatabase().get(requestTable[1]).getValue()),
+                () -> assertEquals(
+                        serverCall.getDatabase().get(requestTable[1]).getExpireMillis(),
+                        serverDirect.getDatabase().get(requestTable[1]).getExpireMillis())
+        );
+    }
 }

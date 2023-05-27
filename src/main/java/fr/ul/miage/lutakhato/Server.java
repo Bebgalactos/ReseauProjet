@@ -28,32 +28,37 @@ public class Server {
      * @return true si la syntaxe est bonne, false sinon
      */
     public boolean syntaxCheck(String entry) {
-        // Récupération des mots clés entrés
-        String[] entryParts = purgeBlanksNormalizeStrings(entry);
+        if(entry != null) {
+            // Récupération des mots clés entrés
+            String[] entryParts = purgeBlanksNormalizeStrings(entry);
 
-        // Vérification des paramètres
-        List<String> exceptFirst = Arrays.stream(entryParts, 1, entryParts.length).collect(Collectors.toList());
+            if(entryParts.length != 0) {
+                // Vérification des paramètres
+                List<String> exceptFirst = Arrays.stream(entryParts, 1, entryParts.length).collect(Collectors.toList());
 
-        // Le premier argument correspond à la fonction appelée
-        switch (entryParts[0]) {
-            case "APPEND":
-                return syntaxCheckAppend(exceptFirst);
-            case "STRLEN":
-            case "INCR":
-            case "DECR":
-            case "GET":
-                return syntaxCheckIncrDecrGetStrlen(exceptFirst);
-            case "DEL":
-            case "EXISTS":
-                return syntaxCheckDelExists(exceptFirst);
-            case "EXPIRE":
-                return syntaxCheckExpire(exceptFirst);
-            case "SET":
-                return syntaxCheckSet(exceptFirst);
-            default:
-                // Si l'on appele une fonction qui n'existe pas
-                return false;
+                // Le premier argument correspond à la fonction appelée
+                switch (entryParts[0].toUpperCase()) {
+                    case "APPEND":
+                        return syntaxCheckAppend(exceptFirst);
+                    case "STRLEN":
+                    case "INCR":
+                    case "DECR":
+                    case "GET":
+                        return syntaxCheckIncrDecrGetStrlen(exceptFirst);
+                    case "DEL":
+                    case "EXISTS":
+                        return syntaxCheckDelExists(exceptFirst);
+                    case "EXPIRE":
+                        return syntaxCheckExpire(exceptFirst);
+                    case "SET":
+                        return syntaxCheckSet(exceptFirst);
+                    default:
+                        // Si l'on appele une fonction qui n'existe pas
+                        return false;
+                }
+            }
         }
+        return false;
     }
 
     /**
@@ -255,23 +260,18 @@ public class Server {
      * @param key La clé correspondant à la position de l'objet à incrémenter dans la base de donnée
      * @return retourne la nouvelle valeur de l'objet après l'incrémentation, 0 si l'objet n'est pas du bon type ou si la clé n'existe pas dans la base de donnée
      */
-    public int incr(String key) {
+    public int incr(String key) throws NumberFormatException {
         int newValue = 0;
         if (exists(new String[]{key}) > 0) {
-            try {
-                int oldValue = Integer.parseInt(database.get(key).getValue().toString());
-                if (Integer.MAX_VALUE == oldValue) {
-                    newValue = Integer.MAX_VALUE;
-                } else {
-                    newValue = oldValue + 1;
-                }
-                database.get(key).setValue(newValue);
-            } catch (Exception e) {
-                System.out.println("On ne peut pas incrémenter sur un String");
+            int oldValue = Integer.parseInt(database.get(key).getValue().toString());
+            if (Integer.MAX_VALUE == oldValue) {
+                newValue = Integer.MAX_VALUE;
+            } else {
+                newValue = oldValue + 1;
             }
+            database.get(key).setValue(newValue);
         } else {
-            ServerObject serverObject = new ServerObject(-1, newValue);
-            database.put(key, serverObject);
+            set(key, newValue, new String[0]);
         }
         return newValue;
     }
@@ -282,23 +282,18 @@ public class Server {
      * @param key clé dont on veut décrémenter la valeur
      * @return la nouvelle valeur (0 si le décrément n'a pas pu être fait)
      */
-    public int decr(String key) {
+    public int decr(String key) throws NumberFormatException {
         int newValue = 0;
         if (exists(new String[]{key}) > 0) {
-            try {
-                int oldValue = Integer.parseInt(database.get(key).getValue().toString());
-                if (Integer.MIN_VALUE == oldValue) {
-                    newValue = Integer.MIN_VALUE;
-                } else {
-                    newValue = oldValue - 1;
-                }
-                database.get(key).setValue(newValue);
-            } catch (Exception e) {
-                System.out.println("On ne peut pas incrementer sur une chaine de caractères");
+            int oldValue = Integer.parseInt(database.get(key).getValue().toString());
+            if (Integer.MIN_VALUE == oldValue) {
+                newValue = Integer.MIN_VALUE;
+            } else {
+                newValue = oldValue - 1;
             }
+            database.get(key).setValue(newValue);
         } else {
-            ServerObject serverObject = new ServerObject(-1, newValue);
-            database.put(key, serverObject);
+            set(key, newValue, new String[0]);
         }
         return newValue;
     }
