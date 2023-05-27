@@ -7,7 +7,6 @@ import java.util.stream.Collectors;
 
 public class Server {
 
-<<<<<<< HEAD
     private Map<String, ServerObject> database = new HashMap<>();
 
     public void main(String[] args) {
@@ -179,11 +178,11 @@ public class Server {
             }
         }
 
-        ServerObject serverObject = null;
+        ServerObject serverObject;
         if (value instanceof Integer) {
-            serverObject = new ServerObject(expireMillis, (int) value);
+            serverObject = new ServerObject(expireMillis, value);
         } else if (value instanceof String) {
-            serverObject = new ServerObject(expireMillis, (String) value);
+            serverObject = new ServerObject(expireMillis, value);
         } else if (value == null) {
             serverObject = new ServerObject(expireMillis, null);
         } else {
@@ -459,7 +458,7 @@ public class Server {
      * @return true si la syntaxe de la requête set est correcte, false sinon
      */
     private boolean syntaxCheckSetOptions(List<String> array) {
-        Map<String, Boolean> options = new HashMap<String, Boolean>() {{
+        Map<String, Boolean> options = new HashMap<>() {{
             put("EX", false);
             put("PX", false);
             put("NX", false);
@@ -608,7 +607,7 @@ public class Server {
      * @return si la syntaxe est bonne ou pas
      */
     private boolean syntaxCheckExpireOptions(List<String> array) {
-        Map<String, Boolean> options = new HashMap<String, Boolean>() {{
+        Map<String, Boolean> options = new HashMap<>() {{
             put("NX", false);
             put("XX", false);
             put("GT", false);

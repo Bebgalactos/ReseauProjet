@@ -20,11 +20,8 @@ public class ServerSetTest {
         // Instance du serveur
         Server server = new Server();
 
-        // Variables
-        String[] options = new String[]{};
-
         //Tests
-        server.set(key, value, options);
+        server.set(key, value, new String[0]);
         assertAll(
                 () -> assertTrue(server.getDatabase().containsKey(key)),
                 () -> assertEquals(server.getDatabase().get(key).getValue(), value)
