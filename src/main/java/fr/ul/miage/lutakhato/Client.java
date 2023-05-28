@@ -47,9 +47,8 @@ public class Client {
                     break;
                 }
             }
-
             response = responseBuilder.toString();
-            System.out.println("Server> " + response);
+            System.out.println(response);
         } while(!response.equals("exit"));
 /*
         try {

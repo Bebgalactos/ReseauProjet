@@ -39,11 +39,7 @@ public class ServerThread extends Thread {
                     String[] allCommands = received.split("\\|");
                     if(pipelineSyntax(allCommands)){
                         for(String command : allCommands) {
-                            if(toReturn.equals("")) {
-                                toReturn += callFunction(command) + "\n";
-                            } else {
-                                toReturn += "Server> " + callFunction(command) + "\n";
-                            }
+                            toReturn += "Server> " + callFunction(command) + "\n";
                         }
                         toReturn = toReturn.substring(0, toReturn.length()-1); //On enlève le dernier retour à la ligne
                     } else {
@@ -51,7 +47,7 @@ public class ServerThread extends Thread {
                     }
                 } else {
                     if(syntaxCheck(received)){
-                        toReturn = callFunction(received);
+                        toReturn = "Server> " + callFunction(received);
                     } else {
                         toReturn = "Syntax error";
                     }
@@ -278,11 +274,7 @@ public class ServerThread extends Thread {
 
         // on itère sur le tableau de clés
         for (String key : keys) {
-            /*
-            Si la clé existe dans la Map,
-            elle est supprimée à l'aide de la méthode remove(),
-            et la variable res est incrémentée
-             */
+            // Si la clé existe dans la Map, elle est supprimée et la variable res est incrémentée
             if (database.containsKey(key)) {
                 database.remove(key);
                 nbSuccess++;
@@ -398,7 +390,8 @@ public class ServerThread extends Thread {
      */
     public Object get(String key) {
         if (exists(new String[]{key}) > 0) {
-            return database.get(key).getValue();
+            ServerObject obj = database.get(key);
+            return obj.getValue();
         }
         return "nil";
     }
@@ -418,7 +411,7 @@ public class ServerThread extends Thread {
      */
     public int expire(String key, int seconds, String[] options) {
         if (exists(new String[]{key}) > 0) {
-            int expireMillis = seconds * 1000;
+            long expireMillis = Long.parseLong(String.valueOf(seconds * 1000));
             for (String option : options) {
                 switch (option.toUpperCase()) {
                     case "NX":
@@ -549,8 +542,11 @@ public class ServerThread extends Thread {
                         }
                         if (array.size() - 1 > i) {
                             try {
-                                Integer.parseInt(array.get(i + 1));
-                            } catch (Exception e) {
+                                int expire = Integer.parseInt(array.get(i + 1));
+                                if(expire <= 0){
+                                    return false;
+                                }
+                            } catch (NumberFormatException e) {
                                 return false;
                             }
                             i++;
@@ -564,8 +560,11 @@ public class ServerThread extends Thread {
                         }
                         if (array.size() - 1 > i) {
                             try {
-                                Integer.parseInt(array.get(i + 1));
-                            } catch (Exception e) {
+                                int expire = Integer.parseInt(array.get(i + 1));
+                                if(expire <= 0){
+                                    return false;
+                                }
+                            } catch (NumberFormatException  e) {
                                 return false;
                             }
                             i++;
