@@ -5,6 +5,8 @@ import org.junit.jupiter.api.BeforeEach;
 
 import org.junit.jupiter.api.Test;
 
+import java.net.Socket;
+
 
 public class ServerExistsTest {
 
@@ -12,7 +14,7 @@ public class ServerExistsTest {
 
     @BeforeEach
     public void setUp() {
-        server = new ServerThread(client);
+        server = new ServerThread(new Client(new Socket()));
         server.getDatabase().put("key1", new ServerObject(0, "valeur1"));
         server.getDatabase().put("key2", new ServerObject(0, "valeur2"));
         server.getDatabase().put("key3", new ServerObject(0, "valeur3"));

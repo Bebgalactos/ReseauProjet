@@ -12,10 +12,14 @@ public class Client {
     private InputStream in;
     private OutputStream out;
 
-    public Client(Socket socket) throws IOException {
+    public Client(Socket socket) {
         this.socket = socket;
-        this.in = socket.getInputStream();
-        this.out = socket.getOutputStream();
+        try {
+            this.in = socket.getInputStream();
+            this.out = socket.getOutputStream();
+        } catch (IOException e) {
+            System.out.println("Socket not connected");
+        }
     }
 
     public static void main(String[] args) throws IOException {

@@ -4,6 +4,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
+import java.net.Socket;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 public class ServerSetTest {
@@ -18,7 +20,7 @@ public class ServerSetTest {
     })
     public void testSetString(String key, String value){
         // Instance du serveur
-        ServerThread server = new ServerThread(client);
+        ServerThread server = new ServerThread(new Client(new Socket()));
 
         //Tests
         server.set(key, value, new String[0]);
@@ -36,7 +38,7 @@ public class ServerSetTest {
     })
     public void testSetInteger(String key, Integer value){
         // Instance du serveur
-        ServerThread server = new ServerThread(client);
+        ServerThread server = new ServerThread(new Client(new Socket()));
 
         // Variables
         String[] options = new String[]{};
@@ -52,7 +54,7 @@ public class ServerSetTest {
     @Test
     public void testSetOverwrite(){
         // Instance du serveur
-        ServerThread server = new ServerThread(client);
+        ServerThread server = new ServerThread(new Client(new Socket()));
 
         // Variables
         String[] options = new String[]{};

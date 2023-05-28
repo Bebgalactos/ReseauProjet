@@ -3,6 +3,7 @@ package fr.ul.miage.lutakhato;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
+import java.net.Socket;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -14,10 +15,10 @@ public class ServerRequestsTest {
             "set ks001 simple GET"
     })
     public void testSetStringRequest(String request) {
-        ServerThread serverCall = new ServerThread(client);
+        ServerThread serverCall = new ServerThread(new Client(new Socket()));
         serverCall.callFunction(request);
 
-        ServerThread serverDirect = new ServerThread(client);
+        ServerThread serverDirect = new ServerThread(new Client(new Socket()));
         String[] requestTable = request.split(" ");
 
         Map<String, ServerObject> newDatabase = new HashMap<>();
@@ -40,10 +41,10 @@ public class ServerRequestsTest {
             "set ks001 10000l EX 100 GET"
     })
     public void testSetStringRequestWithCreationTime(String request) {
-        ServerThread serverCall = new ServerThread(client);
+        ServerThread serverCall = new ServerThread(new Client(new Socket()));
         serverCall.callFunction(request);
 
-        ServerThread serverDirect = new ServerThread(client);
+        ServerThread serverDirect = new ServerThread(new Client(new Socket()));
         String[] requestTable = request.split(" ");
 
         Map<String, ServerObject> newDatabase = new HashMap<>();

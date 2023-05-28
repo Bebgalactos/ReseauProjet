@@ -24,7 +24,7 @@ public class ServerThread extends Thread {
             OutputStream out = this.client.getOutputStream();
 
             while (true) {
-                byte[] buffer = new byte[20];
+                byte[] buffer = new byte[2048];
                 int numRead = in.read(buffer);
                 if (numRead == -1) {
                     this.client.close();
@@ -35,10 +35,26 @@ public class ServerThread extends Thread {
                 System.out.println("> reçu :  " + received);
 
                 String toReturn = "";
-                if(syntaxCheck(received)){
-                    toReturn = callFunction(received);
+                if(received.contains("|")) {
+                    String[] allCommands = received.split("\\|");
+                    if(pipelineSyntax(allCommands)){
+                        for(String command : allCommands) {
+                            if(toReturn.equals("")) {
+                                toReturn += callFunction(command) + "\n";
+                            } else {
+                                toReturn += "Server> " + callFunction(command) + "\n";
+                            }
+                        }
+                        toReturn = toReturn.substring(0, toReturn.length()-1); //On enlève le dernier retour à la ligne
+                    } else {
+                        toReturn = "Syntax error";
+                    }
                 } else {
-                    toReturn = "Error";
+                    if(syntaxCheck(received)){
+                        toReturn = callFunction(received);
+                    } else {
+                        toReturn = "Syntax error";
+                    }
                 }
                 out.write(toReturn.getBytes());
             }
@@ -55,6 +71,15 @@ public class ServerThread extends Thread {
             toReturn = "Entry error";
         }
         System.out.println(toReturn);*/
+    }
+
+    public boolean pipelineSyntax(String[] allCommands) {
+        for (String command : allCommands) {
+            if (!syntaxCheck(command)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
@@ -183,14 +208,14 @@ public class ServerThread extends Thread {
      */
     public String set(String key, Object value, String[] options) {
 
-        String toReturn = null;
-        int expireMillis = -1;
+        String toReturn = "OK";
+        long expireMillis = -1;
 
         for (int i = 0; i < options.length; i++) {
             String option = options[i].toUpperCase();
             switch (option) {
                 case "EX":
-                    expireMillis = 1000 * Integer.parseInt(options[i + 1]);
+                    expireMillis = Long.parseLong(String.valueOf(1000 * Integer.parseInt(options[i + 1])));
                     i++;
                     break;
 
@@ -201,29 +226,21 @@ public class ServerThread extends Thread {
 
                 case "NX":
                     if (exists(new String[]{key}) > 0) {
-                        return toReturn;
+                        return "nil";
                     }
                     break;
 
                 case "XX":
                     if (!(exists(new String[]{key}) > 0)) {
-                        return toReturn;
+                        return "nil";
                     }
                     break;
 
                 case "GET":
                     if (exists(new String[]{key}) > 0) {
-                        try {
-                            if (database.get(key).getValue() instanceof String) {
-                                toReturn = String.valueOf(database.get(key).getValue());
-                            } else {
-                                throw new Exception("value in key position isn't a String");
-                            }
-                        } catch (Exception e) {
-                            return ("Erreur: value is not the right type");
-                        }
+                        toReturn = String.valueOf(database.get(key).getValue());
                     } else {
-                        toReturn = null;
+                        toReturn = "nil";
                     }
                     break;
 
@@ -377,13 +394,13 @@ public class ServerThread extends Thread {
      * Fonction permettant de récupérer une valeur dans la base de données
      *
      * @param key nom de la valeur à récupérer dans la base de données
-     * @return la valeur associée à la clé dans la base de données (retourne null si la valeur n'existe pas)
+     * @return la valeur associée à la clé dans la base de données (retourne nil si la valeur n'existe pas)
      */
     public Object get(String key) {
         if (exists(new String[]{key}) > 0) {
             return database.get(key).getValue();
         }
-        return null;
+        return "nil";
     }
 
     /**
@@ -554,7 +571,6 @@ public class ServerThread extends Thread {
                             i++;
                         }
                         break;
-
                     case "NX":
                         if (!options.get("NX") && !options.get("XX")) {
                             options.replace("NX", true);
@@ -601,17 +617,15 @@ public class ServerThread extends Thread {
         for (int i = 0; i < input.length(); i++) {
             char c = input.charAt(i);
 
-            if (c == '"') {
-                if (!escapeBackSlash) {
-                    // Début ou fin des guillemets englobants
-                    insideQuotes = !insideQuotes;
-                    continue;
-                } else {
-                    // Guillemet échappé (\"), ajouter un guillemet dans la chaîne courante
-                    currentString.append(c);
-                    escapeBackSlash = false;
-                }
-            } else if (c == '\\' && insideQuotes && i + 1 < input.length() && input.charAt(i + 1) == '"') {
+            if (escapeBackSlash) {
+                // Guillemet échappé (\"), ajouter un guillemet dans la chaîne courante
+                escapeBackSlash = false;
+
+            } else if (c == '"') {
+                // Début ou fin des guillemets englobants
+                insideQuotes = !insideQuotes;
+                continue;
+            } else if (c == '\\' && i + 1 < input.length() && String.valueOf(input.charAt(i + 1)).equals("\"")) {
                 // Guillemet non échappé (\") sous la forme \"
                 escapeBackSlash = true;
                 continue;

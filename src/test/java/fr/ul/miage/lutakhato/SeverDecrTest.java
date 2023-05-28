@@ -2,6 +2,8 @@ package fr.ul.miage.lutakhato;
 
 import org.junit.jupiter.api.Test;
 
+import java.net.Socket;
+
 import static org.junit.Assert.assertNotNull;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -10,7 +12,7 @@ public class SeverDecrTest {
     @Test
     public void testDecr() {
         // Instance du server
-        ServerThread server = new ServerThread(client);
+        ServerThread server = new ServerThread(new Client(new Socket()));
 
         // Ajouter une clé à décrémenter dans la Map database
         server.set("key1", 0, new String[0]);

@@ -3,6 +3,8 @@ package fr.ul.miage.lutakhato;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
+import java.net.Socket;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 public class ServerStrlenTest {
@@ -17,7 +19,7 @@ public class ServerStrlenTest {
             "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()-=_+[]{}|;':,.<>/?`~éàèêëïîôöüùûçÄÖÜßáíóúñ¿¡æøåÅÆØÑ"
     })
     public void testStrlen(String entry){
-        ServerThread server = new ServerThread(client);
+        ServerThread server = new ServerThread(new Client(new Socket()));
         String entryKey = entry + "key";
 
         server.set(entryKey, entry, new String[]{});

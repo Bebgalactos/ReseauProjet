@@ -2,6 +2,8 @@ package fr.ul.miage.lutakhato;
 
 import org.junit.jupiter.api.Test;
 
+import java.net.Socket;
+
 import static org.junit.Assert.assertNotNull;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -10,7 +12,7 @@ public class ServerAppendTest {
     @Test
     public void testAppend_ExistingKey() {
         // Instance du server
-        ServerThread server = new ServerThread(client);
+        ServerThread server = new ServerThread(new Client(new Socket()));
 
         // Ajouter une clé existante dans la Map database
         server.set("key1", "value1", new String[0]);
@@ -28,7 +30,7 @@ public class ServerAppendTest {
     @Test
     public void testAppend_NewKey() {
         // Instance du server
-        ServerThread server = new ServerThread(client);
+        ServerThread server = new ServerThread(new Client(new Socket()));
 
         server.set("key1", "", new String[0]);
 

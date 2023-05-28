@@ -6,7 +6,7 @@ public class ServerObject {
     private long creationMillis = System.currentTimeMillis();
     private long expireMillis = -1;
     private Object value = 0;
-    public ServerObject(int expire, Object value) {
+    public ServerObject(long expire, Object value) {
         setExpireMillis(expire);
         setValue(value);
     }
@@ -21,7 +21,7 @@ public class ServerObject {
     public long getCreationMillis(){
         return this.creationMillis;
     }
-    public void setExpireMillis(int expire) {
+    public void setExpireMillis(long expire) {
         this.expireMillis = expire;
     }
     public long getExpireMillis(){

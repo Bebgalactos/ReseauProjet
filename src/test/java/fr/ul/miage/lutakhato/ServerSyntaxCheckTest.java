@@ -4,6 +4,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
+import java.net.Socket;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 public class ServerSyntaxCheckTest {
@@ -33,6 +35,7 @@ public class ServerSyntaxCheckTest {
             "SET ki002 plouk EX 10 XX",
             "SET ki002 plouk PX 10000 NX",
             "SET ki002 plouk PX 10000 XX",
+            "set ki001 \"barrels\"",
             "set ki001 \"barrels with spaces between them\"",
             "set \"key with spaces\" barrels",
             "set \"key with spaces\" \"barrels with spaces between them\"",
@@ -44,7 +47,7 @@ public class ServerSyntaxCheckTest {
 
     })
     public void testGoodSyntaxSet(String entry) {
-        assertTrue((new ServerThread(client)).syntaxCheck(entry));
+        assertTrue((new ServerThread(new Client(new Socket()))).syntaxCheck(entry));
     }
 
     @ParameterizedTest(name = "{0}")
@@ -59,7 +62,7 @@ public class ServerSyntaxCheckTest {
             "SET ki002 -1000 XX XX",
     })
     public void testBadSyntaxSet(String entry) {
-        assertFalse((new ServerThread(client)).syntaxCheck(entry));
+        assertFalse((new ServerThread(new Client(new Socket()))).syntaxCheck(entry));
     }
 
     @ParameterizedTest(name = "{0}")
@@ -80,7 +83,7 @@ public class ServerSyntaxCheckTest {
             "DEL ksjhfbisevbofesief 0",
     })
     public void testGoodSyntax(String entry) {
-        assertTrue((new ServerThread(client)).syntaxCheck(entry));
+        assertTrue((new ServerThread(new Client(new Socket()))).syntaxCheck(entry));
     }
 
 
@@ -94,7 +97,7 @@ public class ServerSyntaxCheckTest {
             "APPEND", "DECR", "DEL", "EXISTS", "EXPIRE", "GET", "INCR", "SET"
     })
     public void testBadSyntax(String entry) {
-        assertFalse((new ServerThread(client)).syntaxCheck(entry));
+        assertFalse((new ServerThread(new Client(new Socket()))).syntaxCheck(entry));
     }
 
     @ParameterizedTest(name = "{0}")
@@ -108,7 +111,7 @@ public class ServerSyntaxCheckTest {
             "expire k1001 10 gt"
     })
     public void testGoodSyntaxExpire(String entry) {
-        assertTrue((new ServerThread(client)).syntaxCheck(entry));
+        assertTrue((new ServerThread(new Client(new Socket()))).syntaxCheck(entry));
     }
 
     @ParameterizedTest(name = "{0}")
@@ -123,15 +126,15 @@ public class ServerSyntaxCheckTest {
             "expire ki002 1000 er"
     })
     public void testBadSyntaxExpire(String entry) {
-        assertFalse((new ServerThread(client)).syntaxCheck(entry));
+        assertFalse((new ServerThread(new Client(new Socket()))).syntaxCheck(entry));
     }
 
     @Test
     public void testBadSyntaxEmptyArgument() {
         assertAll(
-                () -> assertFalse((new ServerThread(client)).syntaxCheck("")),
-                () -> assertFalse((new ServerThread(client)).syntaxCheck(" ")),
-                () -> assertFalse((new ServerThread(client)).syntaxCheck("             "))
+                () -> assertFalse((new ServerThread(new Client(new Socket()))).syntaxCheck("")),
+                () -> assertFalse((new ServerThread(new Client(new Socket()))).syntaxCheck(" ")),
+                () -> assertFalse((new ServerThread(new Client(new Socket()))).syntaxCheck("             "))
         );
     }
 

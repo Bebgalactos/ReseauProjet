@@ -2,6 +2,8 @@ package fr.ul.miage.lutakhato;
 
 import org.junit.jupiter.api.Test;
 
+import java.net.Socket;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 public class ServerExpireTest {
@@ -9,7 +11,7 @@ public class ServerExpireTest {
     @Test
     public void testExpire(){
         // Instance du serveur
-        ServerThread test = new ServerThread(client);
+        ServerThread test = new ServerThread(new Client(new Socket()));
 
         // Tests - valeurs de base
         test.set("init", 115, new String[]{});
