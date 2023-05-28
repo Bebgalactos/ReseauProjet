@@ -9,6 +9,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import static fr.ul.miage.lutakhato.Server.channels;
+
 public class ServerThread extends Thread {
 
     private final Client client;
@@ -43,30 +45,20 @@ public class ServerThread extends Thread {
                         }
                         toReturn = toReturn.substring(0, toReturn.length()-1); //On enlève le dernier retour à la ligne
                     } else {
-                        toReturn = "Syntax error";
+                        toReturn = "Server> Syntax error";
                     }
                 } else {
                     if(syntaxCheckMethods(received)){
                         toReturn = "Server> " + callFunction(received);
                     } else {
-                        toReturn = "Syntax error";
+                        toReturn = "Server> Syntax error";
                     }
                 }
                 out.write(toReturn.getBytes());
             }
-        } catch (IOException var6) {
-            var6.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-        /*
-        String received = "SET 0 0";
-        String toReturn = "";
-        if (syntaxCheck(received)) {
-            toReturn = callFunction(received);
-        } else {
-            // Retourne au client : (sysout ne revient pas au même/ à refaire)
-            toReturn = "Entry error";
-        }
-        System.out.println(toReturn);*/
     }
 
     public boolean pipelineSyntax(String[] allCommands) {
@@ -112,6 +104,8 @@ public class ServerThread extends Thread {
                         return syntaxCheckExpire(exceptFirst);
                     case "SET":
                         return syntaxCheckSet(exceptFirst);
+                    case "EXIT":
+                        return true;
                     default:
                         // Si l'on appele une fonction qui n'existe pas
                         return false;
@@ -129,11 +123,12 @@ public class ServerThread extends Thread {
      */
     public String callFunction(String entry) {
         String toReturn = "";
+        int reply;
         String[] entryParts = purgeBlanksNormalizeStrings(entry);
         List<String> exceptFirst = Arrays.stream(entryParts, 1, entryParts.length).collect(Collectors.toList());
         switch (entryParts[0].toUpperCase()) {
             case "PUBLISH":
-                int reply = publishToChannel(entryParts[1].trim(), entryParts[2].trim());
+                reply = publishToChannel(entryParts[1].trim(), entryParts[2].trim());
                 if(reply != -1){
                     toReturn = String.valueOf(reply);
                 } else {
@@ -141,7 +136,12 @@ public class ServerThread extends Thread {
                 }
                 break;
             case "SUBSCRIBE":
-                subscribeToChannel(entryParts[1].trim());
+                reply = subscribeToChannel(exceptFirst.get(0));
+                if(reply != -1){
+                    toReturn = String.valueOf(reply);
+                } else {
+                    toReturn = "Error";
+                }
                 break;
             case "APPEND":
                 toReturn = String.valueOf(append(exceptFirst.get(0), exceptFirst.get(1)));
@@ -734,27 +734,23 @@ public class ServerThread extends Thread {
         return array.size() > 0;
     }
 
-
-    private void subscribeToChannel(String channelName) {
-        Channel c = Channel.findChannelInList(Server.channels, channelName);
-        String output = "";
+    private int subscribeToChannel(String channelName) {
+        Channel c = Channel.findChannelInList(channels, channelName);
         if (c != null) {
-            c.subscribe(this);
-            output = "Subscribed to " + channelName + " Channel";
+            try {
+                c.subscribe(this);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return 1;
         } else {
-            output = "Channel " + channelName + " not found !";
+            return -1;
         }
-        try {
-            this.client.getOutputStream().write((output).toUpperCase().getBytes(StandardCharsets.UTF_8));
-        } catch (IOException e) {
-
-        }
-
     }
 
     public int publishToChannel(String channelName, String message) {
         int reply = 0;
-        Channel c = Channel.findChannelInList(Server.channels, channelName);
+        Channel c = Channel.findChannelInList(channels, channelName);
         if (c != null) {
             try {
                 c.publish(message);
@@ -764,7 +760,9 @@ public class ServerThread extends Thread {
             }
         } else {
             try {
-                this.client.getOutputStream().write("Channel not found !".toUpperCase().getBytes(StandardCharsets.UTF_8));
+                channels.add(new Channel(channelName));
+                Channel c2 = Channel.findChannelInList(channels, channelName);
+                c2.publish(message);
             } catch (Exception e) {
                 return -1;
             }
@@ -773,7 +771,8 @@ public class ServerThread extends Thread {
     }
 
     public void NewMessage(String message) throws IOException {
-        this.client.getOutputStream().write(message.toUpperCase().getBytes(StandardCharsets.UTF_8));
+        message = "\nServer> " + message + "\n>";
+        this.client.getOutputStream().write(message.getBytes(StandardCharsets.UTF_8));
     }
 
     // Getters et Setters ----------------------------------------------------------------

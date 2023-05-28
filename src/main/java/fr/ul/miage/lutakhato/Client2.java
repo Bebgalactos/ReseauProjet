@@ -7,27 +7,22 @@ import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.util.Scanner;
 
-public class Client {
+public class Client2 {
     private Socket socket;
     private InputStream in;
     private OutputStream out;
 
-    public Client(Socket socket) {
+    public Client2(Socket socket) throws IOException {
         this.socket = socket;
-        try {
-            this.in = socket.getInputStream();
-            this.out = socket.getOutputStream();
-        } catch (IOException e) {
-            System.out.println("Socket not connected");
-        }
+        this.in = socket.getInputStream();
+        this.out = socket.getOutputStream();
     }
 
     public static void main(String[] args) throws IOException {
-        Socket clientSocket = new Socket("localhost", 6379);
+        Socket clientSocket = new Socket("localhost", 1337);
         Client client = new Client(clientSocket);
         client.interact();
     }
-
 
     public void interact() throws IOException {
         Thread responseListenerThread = new Thread(this::listenForResponses);
@@ -44,6 +39,7 @@ public class Client {
         } while (!response.equals("exit"));
 
         responseListenerThread.interrupt();
+        close();
         System.out.println("Déconnexion du serveur.");
     }
 
@@ -56,9 +52,8 @@ public class Client {
             while ((numRead = this.in.read(buffer)) != -1) {
                 responseBuilder.append(new String(buffer, 0, numRead, StandardCharsets.UTF_8));
                 if (numRead < buffer.length) {
-                    Thread.sleep(100);
                     String response = responseBuilder.toString();
-                    System.out.println(response);
+                    System.out.println("Server> " + response);
 
                     if (response.equals("exit")) {
                         break;
@@ -68,8 +63,6 @@ public class Client {
                 }
             }
         } catch (IOException e) {
-            e.printStackTrace();
-        } catch (InterruptedException e) {
             e.printStackTrace();
         }
     }

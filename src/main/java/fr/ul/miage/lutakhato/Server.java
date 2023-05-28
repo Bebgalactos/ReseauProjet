@@ -7,20 +7,22 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Server {
+
+    public static boolean slave = false;
+    public static List<Socket> slaves = new ArrayList<>();
     protected static List<Channel> channels = new ArrayList();
 
     public Server() {
     }
 
     public static void main(String[] args) {
-        channels.add(new Channel("redis"));
         (new Server()).start();
     }
 
     private void start() {
         try {
             InetAddress bindAddress = InetAddress.getByName("0.0.0.0");
-            ServerSocket server = new ServerSocket(1337, 1, bindAddress);
+            ServerSocket server = new ServerSocket(6379, 1, bindAddress);
             System.out.println("> Attente de connexion des clients ...");
 
             while(true) {
