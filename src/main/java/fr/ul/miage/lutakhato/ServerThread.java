@@ -46,7 +46,7 @@ public class ServerThread extends Thread {
                         toReturn = "Syntax error";
                     }
                 } else {
-                    if(syntaxCheck(received)){
+                    if(syntaxCheckMethods(received)){
                         toReturn = "Server> " + callFunction(received);
                     } else {
                         toReturn = "Syntax error";
@@ -71,7 +71,7 @@ public class ServerThread extends Thread {
 
     public boolean pipelineSyntax(String[] allCommands) {
         for (String command : allCommands) {
-            if (!syntaxCheck(command)) {
+            if (!syntaxCheckMethods(command)) {
                 return false;
             }
         }
@@ -84,7 +84,7 @@ public class ServerThread extends Thread {
      * @param entry entrée dont on veut vérifier la syntaxe
      * @return true si la syntaxe est bonne, false sinon
      */
-    public boolean syntaxCheck(String entry) {
+    public boolean syntaxCheckMethods(String entry) {
         if (entry != null) {
             // Récupération des mots clés entrés
             String[] entryParts = purgeBlanksNormalizeStrings(entry);

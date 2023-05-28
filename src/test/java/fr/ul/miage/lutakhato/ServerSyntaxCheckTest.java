@@ -47,7 +47,7 @@ public class ServerSyntaxCheckTest {
 
     })
     public void testGoodSyntaxSet(String entry) {
-        assertTrue((new ServerThread(new Client(new Socket()))).syntaxCheck(entry));
+        assertTrue((new ServerThread(new Client(new Socket()))).syntaxCheckMethods(entry));
     }
 
     @ParameterizedTest(name = "{0}")
@@ -62,7 +62,7 @@ public class ServerSyntaxCheckTest {
             "SET ki002 -1000 XX XX",
     })
     public void testBadSyntaxSet(String entry) {
-        assertFalse((new ServerThread(new Client(new Socket()))).syntaxCheck(entry));
+        assertFalse((new ServerThread(new Client(new Socket()))).syntaxCheckMethods(entry));
     }
 
     @ParameterizedTest(name = "{0}")
@@ -83,7 +83,7 @@ public class ServerSyntaxCheckTest {
             "DEL ksjhfbisevbofesief 0",
     })
     public void testGoodSyntax(String entry) {
-        assertTrue((new ServerThread(new Client(new Socket()))).syntaxCheck(entry));
+        assertTrue((new ServerThread(new Client(new Socket()))).syntaxCheckMethods(entry));
     }
 
 
@@ -97,7 +97,7 @@ public class ServerSyntaxCheckTest {
             "APPEND", "DECR", "DEL", "EXISTS", "EXPIRE", "GET", "INCR", "SET"
     })
     public void testBadSyntax(String entry) {
-        assertFalse((new ServerThread(new Client(new Socket()))).syntaxCheck(entry));
+        assertFalse((new ServerThread(new Client(new Socket()))).syntaxCheckMethods(entry));
     }
 
     @ParameterizedTest(name = "{0}")
@@ -111,7 +111,7 @@ public class ServerSyntaxCheckTest {
             "expire k1001 10 gt"
     })
     public void testGoodSyntaxExpire(String entry) {
-        assertTrue((new ServerThread(new Client(new Socket()))).syntaxCheck(entry));
+        assertTrue((new ServerThread(new Client(new Socket()))).syntaxCheckMethods(entry));
     }
 
     @ParameterizedTest(name = "{0}")
@@ -126,15 +126,15 @@ public class ServerSyntaxCheckTest {
             "expire ki002 1000 er"
     })
     public void testBadSyntaxExpire(String entry) {
-        assertFalse((new ServerThread(new Client(new Socket()))).syntaxCheck(entry));
+        assertFalse((new ServerThread(new Client(new Socket()))).syntaxCheckMethods(entry));
     }
 
     @Test
     public void testBadSyntaxEmptyArgument() {
         assertAll(
-                () -> assertFalse((new ServerThread(new Client(new Socket()))).syntaxCheck("")),
-                () -> assertFalse((new ServerThread(new Client(new Socket()))).syntaxCheck(" ")),
-                () -> assertFalse((new ServerThread(new Client(new Socket()))).syntaxCheck("             "))
+                () -> assertFalse((new ServerThread(new Client(new Socket()))).syntaxCheckMethods("")),
+                () -> assertFalse((new ServerThread(new Client(new Socket()))).syntaxCheckMethods(" ")),
+                () -> assertFalse((new ServerThread(new Client(new Socket()))).syntaxCheckMethods("             "))
         );
     }
 
